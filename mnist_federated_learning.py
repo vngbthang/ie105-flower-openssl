@@ -150,35 +150,67 @@ def run_client(secure=True):
     client = MnistClient(model, trainloader, testloader)
     
     if secure:
-        print("Đang khởi động Flower client bảo mật với TLS/SSL...")
+        print("Đang khởi động Flower client bảo mật với TLS/SSL (sử dụng flower-supernode)...")
         try:
             # Kiểm tra tồn tại chứng chỉ CA
             if not (CERT_DIR / "ca/ca.pem").exists():
                 raise FileNotFoundError(f"Không tìm thấy chứng chỉ CA: {CERT_DIR / 'ca/ca.pem'}")
+        
+            # Sử dụng subprocess để chạy flower-supernode
+            import subprocess
             
-            # Tải chứng chỉ CA
-            with open(CERT_DIR / "ca/ca.pem", 'rb') as f:
-                ca_cert = f.read()
+            cmd = [
+                "flower-supernode",
+                f"--root-certificates={CERT_DIR}/ca/ca.pem",
+                "--superlink=localhost:8443"
+            ]
             
-            # Khởi động client với TLS/SSL
-            start_client(
-                server_address="localhost:8443",
-                client=client,
-                root_certificates=ca_cert
-            )
+            print(f"Chạy lệnh: {' '.join(cmd)}")
+            
+            try:
+                subprocess.run(cmd)
+            except KeyboardInterrupt:
+                print("\nClient bị dừng bởi người dùng.")
+            except Exception as e:
+                print(f"Lỗi khi chạy flower-supernode: {e}")
+                
+                print("Quay lại phương thức cũ (deprecated)...")
+                # Tải chứng chỉ CA
+                with open(CERT_DIR / "ca/ca.pem", 'rb') as f:
+                    ca_cert = f.read()
+                
+                # Khởi động client với TLS/SSL (phương thức cũ)
+                start_client(
+                    server_address="localhost:8443",
+                    client=client,
+                    root_certificates=ca_cert
+                )
+                
         except Exception as e:
-            print(f"Lỗi khi tải chứng chỉ client: {e}")
+            print(f"Lỗi khi khởi động client: {e}")
     else:
         print("Đang khởi động Flower client không bảo mật (không có TLS/SSL)...")
-        start_client(
-            server_address="localhost:8080",
-            client=client
-        )
+        try:
+            # Sử dụng flower-supernode không bảo mật
+            import subprocess
+            cmd = ["flower-supernode", "--insecure", "--superlink=localhost:8080"]
+            print(f"Chạy lệnh: {' '.join(cmd)}")
+            subprocess.run(cmd)
+        except KeyboardInterrupt:
+            print("\nClient bị dừng bởi người dùng.")
+        except Exception as e:
+            print(f"Lỗi khi chạy flower-supernode không bảo mật: {e}")
+            print("Quay lại phương thức cũ (deprecated)...")
+            # Khởi động client không bảo mật (phương thức cũ)
+            start_client(
+                server_address="localhost:8080",
+                client=client
+            )
 
 def run_server(secure=True):
     """Chạy Flower server."""
     if secure:
-        print("Đang khởi động Flower server bảo mật với TLS/SSL...")
+        print("Đang khởi động Flower server bảo mật với TLS/SSL (sử dụng flower-superlink)...")
         try:
             # Kiểm tra tồn tại chứng chỉ
             if not (CERT_DIR / "server/server.pem").exists():
@@ -187,61 +219,70 @@ def run_server(secure=True):
                 raise FileNotFoundError(f"Không tìm thấy khóa server: {CERT_DIR / 'server/server.key'}")
             if not (CERT_DIR / "ca/ca.pem").exists():
                 raise FileNotFoundError(f"Không tìm thấy chứng chỉ CA: {CERT_DIR / 'ca/ca.pem'}")
-                
-            # Tải các chứng chỉ
-            with open(CERT_DIR / "server/server.pem", 'rb') as f:
-                server_cert = f.read()
-            with open(CERT_DIR / "server/server.key", 'rb') as f:
-                server_key = f.read()
-            with open(CERT_DIR / "ca/ca.pem", 'rb') as f:
-                ca_cert = f.read()
             
-            # Truyền chứng chỉ đến Flower server
-            certificates = (server_cert, server_key, ca_cert)
+            # Sử dụng subprocess để chạy flower-superlink
+            import subprocess
             
-            print(f"Đã tải thành công các chứng chỉ từ {CERT_DIR}")
+            cmd = [
+                "flower-superlink",
+                f"--ssl-certfile={CERT_DIR}/server/server.pem",
+                f"--ssl-keyfile={CERT_DIR}/server/server.key",
+                f"--ssl-ca-certfile={CERT_DIR}/ca/ca.pem",
+                "--fleet-api-address=[::]:8443"
+            ]
+            
+            print(f"Chạy lệnh: {' '.join(cmd)}")
+            subprocess.run(cmd)
+            
         except Exception as e:
-            print(f"Lỗi khi tải chứng chỉ: {e}")
+            print(f"Lỗi khi khởi động server: {e}")
             return
-        
-        fl.server.start_server(
-            server_address=f"[::]:8443",
-            config=fl.server.ServerConfig(num_rounds=1),
-            certificates=certificates,
-            strategy=fl.server.strategy.FedAvg(
-                min_available_clients=1,
-                min_fit_clients=1,
-                min_evaluate_clients=1,
-            ),
-        )
     else:
         print("Đang khởi động Flower server không bảo mật (không có TLS/SSL)...")
-        fl.server.start_server(
-            server_address=f"[::]:8080",
-            config=fl.server.ServerConfig(num_rounds=1),
-            strategy=fl.server.strategy.FedAvg(
-                min_available_clients=1,
-                min_fit_clients=1,
-                min_evaluate_clients=1,
-            ),
-        )
+        try:
+            # Sử dụng subprocess để chạy flower-superlink không bảo mật
+            import subprocess
+            subprocess.run(["flower-superlink", "--insecure", "--fleet-api-address=[::]:8080"])
+        except Exception as e:
+            print(f"Lỗi khi khởi động server: {e}")
+            return
 
 def main():
     """Hàm chính để chạy quá trình học liên hợp."""
     print("===== HỌC LIÊN HỢP (FEDERATED LEARNING) VỚI BỘ DỮ LIỆU MNIST =====")
     
-    # Hỏi người dùng muốn chạy client hay server
-    mode = input("Bạn muốn chạy phần nào? (1: Server, 2: Client): ")
+    # Kiểm tra tham số dòng lệnh
+    import argparse
     
-    # Hỏi người dùng có muốn sử dụng TLS/SSL không
-    use_ssl = input("Bạn có muốn sử dụng kết nối bảo mật TLS/SSL không? (y/n): ").lower() == 'y'
+    parser = argparse.ArgumentParser(description='Chương trình Federated Learning MNIST')
+    parser.add_argument('--server', action='store_true', help='Chạy chương trình như server')
+    parser.add_argument('--client', action='store_true', help='Chạy chương trình như client')
+    parser.add_argument('--ssl', action='store_true', help='Sử dụng bảo mật TLS/SSL')
+    parser.add_argument('--no-ssl', action='store_true', help='Không sử dụng bảo mật TLS/SSL')
     
-    if mode == "1":
-        run_server(secure=use_ssl)
-    elif mode == "2":
-        run_client(secure=use_ssl)
+    args = parser.parse_args()
+    
+    # Nếu có tham số dòng lệnh
+    if args.server or args.client or args.ssl or args.no_ssl:
+        if args.server:
+            run_server(secure=(args.ssl and not args.no_ssl))
+        elif args.client:
+            run_client(secure=(args.ssl and not args.no_ssl))
+        else:
+            print("Vui lòng chỉ định --server hoặc --client")
     else:
-        print("Lựa chọn không hợp lệ. Vui lòng chọn 1 (Server) hoặc 2 (Client).")
+        # Hỏi người dùng muốn chạy client hay server
+        mode = input("Bạn muốn chạy phần nào? (1: Server, 2: Client): ")
+        
+        # Hỏi người dùng có muốn sử dụng TLS/SSL không
+        use_ssl = input("Bạn có muốn sử dụng kết nối bảo mật TLS/SSL không? (y/n): ").lower() == 'y'
+        
+        if mode == "1":
+            run_server(secure=use_ssl)
+        elif mode == "2":
+            run_client(secure=use_ssl)
+        else:
+            print("Lựa chọn không hợp lệ. Vui lòng chọn 1 (Server) hoặc 2 (Client).")
 
 if __name__ == "__main__":
     try:
