@@ -11,7 +11,9 @@
 - Python 3.6+
 - Flower (flwr) 1.5+
 - OpenSSL
-- Các thư viện Python liên quan
+- tcpdump (cho việc kiểm tra mã hóa)
+- tshark/Wireshark (tùy chọn, cho việc phân tích gói tin)
+- Các thư viện Python liên quan (torch, torchvision cho test dataset)
 
 ## Cài đặt
 
@@ -34,6 +36,22 @@ Script này tạo ra:
 - CA key và certificate
 - Server key và certificate được ký bởi CA
 - Client key và certificate được ký bởi CA
+
+### 3. Kiểm tra Mã hóa TLS/SSL
+
+Để xác minh rằng dữ liệu truyền giữa client và server thực sự được mã hóa:
+
+```bash
+sudo ./run_encryption_test.sh
+```
+
+Script này sẽ:
+- Bắt gói tin mạng trong quá trình huấn luyện mô hình
+- Phân tích lưu lượng để xác nhận mã hóa TLS/SSL
+- So sánh với kết nối không bảo mật (tùy chọn)
+- Cung cấp bằng chứng rằng tham số mô hình được bảo vệ
+
+Chi tiết về quy trình và kết quả được mô tả trong [ENCRYPTION_VERIFICATION.md](ENCRYPTION_VERIFICATION.md)
 
 ### 3. Khởi động Server
 
