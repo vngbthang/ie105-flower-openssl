@@ -1,4 +1,4 @@
-# TLS/SSL trong Flower: Chi tiết Kỹ thuật
+# Chi tiết Kỹ thuật về TLS/SSL trong Flower
 
 ## 1. Kiến trúc TLS trong Flower
 
@@ -17,7 +17,7 @@ Flower sử dụng gRPC làm giao thức giao tiếp giữa server và client. g
 
 ### 2.1. Certificate Authority (CA)
 
-CA trong đồ án này là self-signed CA được tạo bởi OpenSSL:
+CA trong dự án này là self-signed CA được tạo bởi OpenSSL:
 
 ```bash
 # Tạo CA key
@@ -52,297 +52,127 @@ Client certificate cũng được ký bởi CA:
 # Tạo client key
 openssl genrsa -out certs/client/client.key 4096
 
-# Tạo CSR
-openssl req -new -key certs/client/client.key -out certs/client/client.csr -subj "/CN=client"
+# Tạo Certificate Signing Request (CSR)
+openssl req -new -key certs/client/client.key -out certs/client/client.csr -subj "/CN=flower-client"
 
 # Ký CSR bởi CA
 openssl x509 -req -in certs/client/client.csr -CA certs/ca/ca.pem -CAkey certs/ca/ca.key -CAcreateserial -out certs/client/client.pem -days 3650 -sha256
 ```
 
-## 3. Thiết lập TLS trong Flower
+## 3. Cài đặt TLS trong Flower
 
-### 3.1. Flower Server
-
-Server cấu hình TLS theo hai cách:
-
-#### 3.1.1. Sử dụng start_server API:
+### 3.1. Server-side TLS
 
 ```python
-import flwr as fl
-import os
+def run_server(use_secure=False):
+    """Khởi động Flower server."""
+    if use_secure:
+        # Đọc chứng chỉ và khóa
+        cert_chain = open(CERT_DIR / "server" / "server.pem", "rb").read()
+        private_key = open(CERT_DIR / "server" / "server.key", "rb").read()
+        root_certificate = open(CERT_DIR / "ca" / "ca.pem", "rb").read()
 
-def main():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    server_cert_file = os.path.join(base_dir, "certs/server/server.pem")
-    server_key_file = os.path.join(base_dir, "certs/server/server.key")
-    ca_cert_file = os.path.join(base_dir, "certs/ca/ca.pem")
-    
-    with open(server_cert_file, 'rb') as f:
-        server_cert = f.read()
-    with open(server_key_file, 'rb') as f:
-        server_key = f.read()
-    with open(ca_cert_file, 'rb') as f:
-        ca_cert = f.read()
-    
-    certificates = (server_cert, server_key, ca_cert)
-    
-    fl.server.start_server(
-        server_address="[::]:8443",
-        config=fl.server.ServerConfig(num_rounds=1),
-        certificates=certificates,
-    )
+        # Khởi tạo server có bật TLS
+        server = fl.server.start_server(
+            server_address=f"0.0.0.0:{SERVER_PORT}",
+            config=fl.server.ServerConfig(num_rounds=3),
+            certificates=(cert_chain, private_key, root_certificate),
+        )
+    else:
+        # Khởi tạo server không sử dụng TLS
+        server = fl.server.start_server(
+            server_address=f"0.0.0.0:{SERVER_PORT}",
+            config=fl.server.ServerConfig(num_rounds=3),
+        )
 ```
 
-#### 3.1.2. Sử dụng flower-superlink CLI:
-
-```bash
-flower-superlink \
-    --ssl-certfile=certs/server/server.pem \
-    --ssl-keyfile=certs/server/server.key \
-    --ssl-ca-certfile=certs/ca/ca.pem \
-    --fleet-api-address=[::]:8443
-```
-
-### 3.2. Flower Client
-
-Client cấu hình TLS theo ba cách:
-
-#### 3.2.1. Sử dụng triển khai trực tiếp (khuyến nghị, từ Flower v1.5+):
+### 3.2. Client-side TLS
 
 ```python
-# Trong file client_supernode.py
-import flwr as fl
-from flwr.client import NumPyClient
-import os
-
-class DummyClient(NumPyClient):
-    def get_parameters(self, config): return []
-    def fit(self, parameters, config): return [], 0, {}
-    def evaluate(self, parameters, config): return 0.0, 0, {}
-
-# Client chính để sử dụng với flower-supernode
-if __name__ == "__main__":
-    # Lấy đường dẫn tuyệt đối đến chứng chỉ CA
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    ca_cert_path = os.path.join(base_dir, "certs/ca/ca.pem")
+def run_client(use_secure=False):
+    """Khởi động Flower client."""
+    model = MnistNet().to(DEVICE)
+    trainloader, testloader = load_data()
     
-    # Đọc chứng chỉ CA
-    with open(ca_cert_path, "rb") as f:
-        ca_cert = f.read()
-    
-    # Khởi động client với chứng chỉ CA
-    fl.client.start_client(
-        server_address="localhost:8443",
-        client=DummyClient(),
-        root_certificates=ca_cert
-    )
+    if use_secure:
+        # Đọc chứng chỉ CA
+        with open(CERT_DIR / "ca" / "ca.pem", "rb") as f:
+            ca_cert = f.read()
+
+        # Khởi động client với TLS
+        fl.client.start_client(
+            server_address=f"127.0.0.1:{SERVER_PORT}",
+            client=MnistClient(model, trainloader, testloader),
+            root_certificates=ca_cert,
+        )
+    else:
+        # Khởi động client không sử dụng TLS
+        fl.client.start_client(
+            server_address=f"127.0.0.1:{SERVER_PORT}",
+            client=MnistClient(model, trainloader, testloader),
+        )
 ```
 
-Chạy bằng lệnh:
+## 4. Bắt tay TLS (TLS Handshake)
 
-```bash
-python client/client_supernode.py
-```
+Bắt tay TLS xảy ra khi client kết nối đến server và thiết lập kênh giao tiếp an toàn:
 
-#### 3.2.2. Sử dụng root_certificates (deprecated):
+1. **ClientHello**: Client gửi version TLS hỗ trợ, random number, và cipher suites hỗ trợ
+2. **ServerHello**: Server chọn version TLS và cipher suite, gửi random number
+3. **Certificate**: Server gửi chứng chỉ của mình
+4. **ServerKeyExchange**: Nếu cần, server gửi thông tin bổ sung
+5. **CertificateRequest**: Server yêu cầu client gửi chứng chỉ (trong mTLS)
+6. **ServerHelloDone**: Server kết thúc phần của mình
+7. **Certificate**: Client gửi chứng chỉ của mình (trong mTLS)
+8. **ClientKeyExchange**: Client gửi pre-master secret đã mã hóa bằng public key của server
+9. **CertificateVerify**: Client chứng minh sở hữu private key tương ứng với chứng chỉ
+10. **ChangeCipherSpec**: Cả hai bên chuyển sang sử dụng khóa đã thỏa thuận
+11. **Finished**: Cả hai bên xác nhận bắt tay thành công
 
-```python
-import flwr as fl
-import os
+## 5. Kiểm tra chứng chỉ trong mTLS
 
-def main():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    
-    with open(os.path.join(base_dir, "certs/ca/ca.pem"), 'rb') as f:
-        ca_cert = f.read()
-    
-    fl.client.start_numpy_client(
-        server_address="localhost:8443",
-        client=DummyClient(),
-        root_certificates=ca_cert
-    )
-```
+Trong mTLS, server và client đều kiểm tra chứng chỉ của đối tác:
 
-#### 3.2.3. Sử dụng SSL Context (deprecated):
+1. **Kiểm tra chữ ký**: Xác minh chứng chỉ được ký bởi CA tin cậy
+2. **Kiểm tra thời hạn**: Đảm bảo chứng chỉ chưa hết hạn
+3. **Kiểm tra trạng thái**: Đảm bảo chứng chỉ không bị thu hồi (trong triển khai cao cấp hơn)
+4. **Kiểm tra tên**: Đảm bảo tên trong chứng chỉ phù hợp với host kết nối
 
-```python
-import flwr as fl
-import ssl
-import os
+## 6. Bộ mã hóa (Cipher Suites)
 
-def main():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    
-    context = ssl.create_default_context(
-        ssl.Purpose.SERVER_AUTH,
-        cafile=os.path.join(base_dir, "certs/ca/ca.pem")
-    )
-    context.load_cert_chain(
-        certfile=os.path.join(base_dir, "certs/client/client.pem"),
-        keyfile=os.path.join(base_dir, "certs/client/client.key")
-    )
-```
+Flower sử dụng các bộ mã hóa mạnh được hỗ trợ bởi OpenSSL. Ví dụ về bộ mã hóa thông dụng:
 
-## 4. Cơ chế xác thực TLS
+- `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384`
+  - Key Exchange: ECDHE (Elliptic Curve Diffie-Hellman Ephemeral)
+  - Authentication: RSA
+  - Bulk Encryption: AES 256 bit in GCM mode
+  - Message Authentication: SHA384
 
-### 4.1. Xác thực Server (Server Authentication)
+## 7. Các ưu điểm của TLS trong Flower
 
-1. Client kết nối đến server
-2. Server gửi certificate của mình cho client
-3. Client kiểm tra chữ ký của certificate sử dụng CA certificate
-4. Nếu hợp lệ, client tin tưởng server và thiết lập kết nối
+- **Bảo mật**: Dữ liệu được mã hóa trong quá trình truyền
+- **Tính toàn vẹn**: Phát hiện bất kỳ thay đổi nào đối với dữ liệu truyền
+- **Xác thực**: Đảm bảo danh tính của các bên tham gia
+- **Ngăn chặn tấn công Man-in-the-Middle**: Đảm bảo kẻ tấn công không thể đánh chặn hoặc thay đổi thông tin
 
-### 4.2. Xác thực Client (Client Authentication - mTLS)
+## 8. Phân tích hiệu năng
 
-1. Sau khi server đã được xác thực, server yêu cầu client certificate
-2. Client gửi certificate của mình cho server
-3. Server kiểm tra chữ ký của certificate sử dụng CA certificate
-4. Nếu hợp lệ, server chấp nhận kết nối từ client
+Việc sử dụng TLS có một số tác động đến hiệu năng:
 
-### 4.3. Thiết lập khóa phiên (Session Key)
+1. **Chi phí bắt tay TLS**: Phát sinh khi thiết lập kết nối
+2. **Chi phí mã hóa/giải mã**: Ảnh hưởng đến thông lượng dữ liệu
+3. **Overhead giao thức**: TLS thêm các header và trailer vào dữ liệu
 
-1. Client và server thực hiện trao đổi khóa để tạo khóa phiên an toàn
-2. Khóa phiên được sử dụng để mã hóa/giải mã dữ liệu trong suốt phiên làm việc
+Tuy nhiên, với tài nguyên phần cứng hiện đại, những chi phí này thường không đáng kể so với lợi ích bảo mật mà TLS mang lại.
 
-## 5. Ưu điểm của hệ thống
+## 9. Thực hành tốt nhất
 
-1. **Tính bảo mật**: Dữ liệu được mã hóa end-to-end
-2. **Tính toàn vẹn**: Bất kỳ thay đổi nào đối với dữ liệu trong quá trình truyền tải đều được phát hiện
-3. **Tính xác thực hai chiều**: Cả server và client đều được xác thực
-4. **Không cần tin tưởng mạng**: Kẻ tấn công không thể nghe lén hoặc thay đổi dữ liệu kể cả khi kiểm soát mạng
+1. **Sử dụng TLS 1.2 hoặc cao hơn**: Tránh các phiên bản cũ với lỗ hổng đã biết
+2. **Sử dụng các bộ mã hóa mạnh**: Ưu tiên ECDHE cho key exchange và AES-GCM cho mã hóa
+3. **Bảo vệ khóa riêng tư**: Đảm bảo khóa riêng tư không bị lộ
+4. **Xoay khóa định kỳ**: Tạo lại key và chứng chỉ định kỳ để tăng bảo mật
+5. **Kiểm tra thu hồi chứng chỉ**: Triển khai CRL hoặc OCSP trong môi trường sản xuất
 
-## 6. Hạn chế của hệ thống
+## 10. Tóm tắt
 
-1. **Quản lý chứng chỉ**: Cần có cơ chế quản lý chứng chỉ một cách an toàn
-2. **Chi phí tính toán**: TLS/SSL tăng chi phí tính toán và độ trễ
-3. **CA tự ký**: Trong môi trường thực tế, nên sử dụng CA được tin cậy thay vì CA tự ký
-
-## 7. So sánh với không sử dụng TLS
-
-| Khía cạnh               | Có TLS                     | Không có TLS                  |
-|-------------------------|----------------------------|-------------------------------|
-| Bảo mật dữ liệu         | Được mã hóa                | Không được mã hóa             |
-| Xác thực                | Xác thực hai chiều         | Không có xác thực             |
-| Man-in-the-middle       | Được bảo vệ                | Dễ bị tấn công                |
-| Chi phí tính toán       | Cao hơn                    | Thấp hơn                      |
-| Độ trễ mạng             | Cao hơn                    | Thấp hơn                      |
-| Cấu hình                | Phức tạp hơn               | Đơn giản hơn                  |
-
-## 8. Kiến trúc SuperNode/SuperLink và Phương pháp Gốc
-
-Flower nâng cấp kiến trúc từ phiên bản 1.5 với việc đưa vào các khái niệm mới: SuperNode và SuperLink. Phần này sẽ so sánh phương pháp gốc và phương pháp mới.
-
-### 8.1. Phương pháp gốc (Client/Server)
-
-Kiến trúc ban đầu của Flower sử dụng mô hình Client/Server truyền thống:
-
-```
-+---------------+                               +---------------+
-|               |                               |               |
-|  Flower       |<-----------------------------→|  Flower       |
-|  Server       |       Kết nối gRPC trực tiếp  |  Client       |
-|               |                               |               |
-+---------------+                               +---------------+
-```
-
-**Đặc điểm:**
-- Server điều phối toàn bộ quá trình huấn luyện
-- Client kết nối trực tiếp đến server
-- API `start_server()` và `start_client()` được sử dụng
-- Cấu hình TLS được truyền trực tiếp qua các tham số API
-
-**Triển khai với TLS:**
-```python
-# Server
-fl.server.start_server(
-    server_address="[::]:8443",
-    config=fl.server.ServerConfig(num_rounds=1),
-    certificates=(server_cert, server_key, ca_cert),
-)
-
-# Client
-fl.client.start_client(
-    server_address="localhost:8443",
-    client=client,
-    root_certificates=ca_cert
-)
-```
-
-### 8.2. Kiến trúc SuperNode/SuperLink
-
-Kiến trúc mới được giới thiệu từ Flower 1.5+ cung cấp nhiều lợi ích hơn:
-
-```
-+---------------+                           +---------------+
-|               |                           |               |
-|  SuperLink    |<------------------------→ |  SuperNode    |
-|  (Server)     |    Kết nối bảo mật        |  (Client)     |
-|               |                           |               |
-+---------------+                           +---------------+
-       ↑                                            ↑
-       |                                            |
-       |  Quản lý                                   |  Cung cấp  
-       |  chiến lược                                |  tài nguyên
-       |  huấn luyện                                |  tính toán
-       ↓                                            ↓
-+---------------+                           +---------------+
-|  Driver       |                           |  Python       |
-|  Code         |                           |  Client       |
-|  (Chiến lược) |                           |  Code         |
-+---------------+                           +---------------+
-```
-
-**Đặc điểm:**
-- SuperLink thay thế cho Server truyền thống, hoạt động như một điều phối viên
-- SuperNode thay thế cho Client truyền thống, cung cấp tài nguyên tính toán
-- Hỗ trợ cấu hình qua dòng lệnh (CLI) thay vì API, thuận tiện hơn cho quản lý
-- Cách ly mã ứng dụng khỏi cơ sở hạ tầng (Driver code không cần biết chi tiết về kết nối)
-- Hỗ trợ xác thực nâng cao và khả năng mở rộng tốt hơn
-
-**Triển khai với TLS:**
-```bash
-# SuperLink (Server)
-flower-superlink \
-    --ssl-certfile=certs/server/server.pem \
-    --ssl-keyfile=certs/server/server.key \
-    --ssl-ca-certfile=certs/ca/ca.pem \
-    --fleet-api-address=[::]:8443
-
-# SuperNode (Client)
-flower-supernode \
-    --superlink='localhost:8443' \
-    --root-certificates='certs/ca/ca.pem'
-```
-
-### 8.3. So sánh giữa hai phương pháp
-
-| Khía cạnh               | Phương pháp gốc (Client/Server) | Kiến trúc SuperNode/SuperLink       |
-|-------------------------|--------------------------------|-------------------------------------|
-| API                     | start_server(), start_client() | CLI: flower-superlink, flower-supernode |
-| Cấu hình TLS           | Thông qua tham số API          | Thông qua tham số dòng lệnh         |
-| Tính module hóa        | Thấp                           | Cao                                 |
-| Khả năng mở rộng       | Hạn chế                        | Tốt hơn                             |
-| Bảo trì                | Phức tạp hơn                   | Đơn giản hơn                        |
-| Tách biệt mối quan tâm  | Ít                             | Nhiều                               |
-| Phù hợp với             | Thử nghiệm đơn giản            | Triển khai quy mô lớn               |
-| Cập nhật codebase       | Cần sửa mã nguồn               | Chỉ thay đổi cấu hình dòng lệnh     |
-
-### 8.4. Lưu ý khi chuyển đổi giữa hai phương pháp
-
-1. **API thay đổi**:
-   - Từ `start_server()` sang `flower-superlink`
-   - Từ `start_client()` sang `flower-supernode`
-
-2. **Cấu hình TLS**:
-   - Phương pháp gốc: `certificates=(server_cert, server_key, ca_cert)` và `root_certificates=ca_cert`
-   - Kiến trúc mới: `--ssl-certfile`, `--ssl-keyfile`, `--ssl-ca-certfile` và `--root-certificates`
-
-3. **Phát triển Client**:
-   - Phương pháp gốc: Trực tiếp khởi động client trong mã
-   - Kiến trúc mới: Định nghĩa hàm `get_client_fn()` để SuperNode gọi khi cần
-
-4. **Đường dẫn chứng chỉ**:
-   - Phương pháp gốc: Thường đọc chứng chỉ vào biến
-   - Kiến trúc mới: Cung cấp đường dẫn trực tiếp đến tệp chứng chỉ
-
-Việc sử dụng kiến trúc SuperNode/SuperLink được khuyến nghị cho các dự án mới và quy mô lớn vì tính module hóa và dễ bảo trì.
+TLS/SSL trong Flower cung cấp một lớp bảo mật quan trọng cho việc truyền tải tham số mô hình và dữ liệu học máy. Việc triển khai mTLS đảm bảo cả client và server đều được xác thực, giúp bảo vệ chống lại các cuộc tấn công man-in-the-middle và đảm bảo tính riêng tư trong quá trình học liên hợp.
