@@ -51,11 +51,65 @@ chmod +x generate_certs.sh
 
 ### 3. Chạy Mô Hình MNIST
 
+#### 3.1. Chạy với `mnist_federated_learning.py` (Cách cũ)
+
 ```bash
 python mnist_federated_learning.py
 ```
 
 Chọn 1 để chạy server và 2 để chạy client trong các terminal khác nhau. Chọn có hoặc không sử dụng TLS/SSL.
+
+#### 3.2. Chạy với `run_mnist_flower_datasets.sh` (Cách mới, khuyến khích)
+
+Script này sử dụng `flwr-datasets` để tải và quản lý dữ liệu MNIST, đồng thời cung cấp nhiều tùy chọn hơn để chạy federated learning.
+
+**Cấp quyền thực thi cho script (nếu chưa có):**
+
+```bash
+chmod +x run_mnist_flower_datasets.sh
+```
+
+**Chạy script với các tùy chọn mặc định (chế độ `direct`, có TLS/SSL, 3 rounds):**
+
+```bash
+./run_mnist_flower_datasets.sh
+```
+
+**Các tùy chọn có sẵn:**
+
+Bạn có thể xem tất cả các tùy chọn bằng cách chạy:
+
+```bash
+./run_mnist_flower_datasets.sh --help
+```
+
+Dưới đây là một số ví dụ:
+
+- **Chạy ở chế độ `direct` không bảo mật (không TLS/SSL):**
+  ```bash
+  ./run_mnist_flower_datasets.sh --insecure
+  ```
+
+- **Chạy server riêng biệt với 5 rounds:**
+  ```bash
+  ./run_mnist_flower_datasets.sh --mode server --rounds 5
+  ```
+
+- **Chạy client riêng biệt (client ID 0) kết nối đến server (yêu cầu server đang chạy):**
+  ```bash
+  ./run_mnist_flower_datasets.sh --mode client --client-id 0
+  ```
+  (Lưu ý: `--client-id` chỉ có tác dụng khi `--mode client`)
+
+- **Chạy mô phỏng (simulation) với 2 rounds:**
+  ```bash
+  ./run_mnist_flower_datasets.sh --mode simulation --rounds 2
+  ```
+
+- **Chạy với thời gian chờ tối đa là 10 phút (600 giây):**
+  ```bash
+  ./run_mnist_flower_datasets.sh --timeout 600
+  ```
 
 ### 4. Phân Tích Bảo Mật
 
