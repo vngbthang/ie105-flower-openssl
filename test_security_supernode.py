@@ -12,6 +12,8 @@ import sys
 import time
 import subprocess
 import signal
+import json
+import tempfile
 
 class DummyClient(NumPyClient):
     """Client giả lập đơn giản cho mục đích kiểm thử."""
@@ -23,73 +25,105 @@ class DummyClient(NumPyClient):
 def get_client_fn():
     return DummyClient()
 
-def create_temp_supernode_script(ca_cert_path=None):
+def create_temp_supernode_script(ca_cert_path=None, client_cert_path=None, client_key_path=None):
     """Tạo script tạm thời cho SuperNode để kiểm tra."""
     script_content = """
-import flwr as fl
-from flwr.client import NumPyClient
+#!/usr/bin/env python3
+import json
+import os
 import sys
+import subprocess
 import time
 
-class DummyClient(NumPyClient):
-    def get_parameters(self, config): return []
-    def fit(self, parameters, config): return [], 0, {}
-    def evaluate(self, parameters, config): return 0.0, 0, {}
-
-# Tạo client instance
-client = DummyClient()
+def run_supernode_with_config(config_file):
+    try:
+        cmd = ["flower-supernode", "--config", config_file]
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        # Chờ một khoảng thời gian ngắn để kết nối thử nghiệm
+        time.sleep(3)
+        
+        # Kết thúc quá trình
+        process.terminate()
+        process.wait()
+        
+        stdout, stderr = process.communicate()
+        combined_output = stdout + stderr
+        
+        # Kiểm tra lỗi
+        if "error" in combined_output.lower() or "failed" in combined_output.lower():
+            print(f"ERROR: {combined_output}")
+            return False
+        
+        print(f"OUTPUT: {combined_output}")
+        return True
+    except Exception as e:
+        print(f"EXCEPTION: {e}")
+        return False
 
 if __name__ == "__main__":
-    try:
-"""
-    if ca_cert_path:
-        script_content += f"""
-        # Đọc chứng chỉ CA
-        with open("{ca_cert_path}", "rb") as f:
-            ca_cert = f.read()
-        
-        # Kết nối với server sử dụng chứng chỉ CA
-        fl.client.start_client(
-            server_address="localhost:8443",
-            client=client,
-            root_certificates=ca_cert
-        )
-"""
-    else:
-        script_content += """
-        # Kết nối với server mà không có chứng chỉ
-        fl.client.start_client(
-            server_address="localhost:8443",
-            client=client
-        )
-"""
-    script_content += """
-    except Exception as e:
-        print(f"ERROR: {e}")
+    # Đọc config file từ tham số dòng lệnh
+    if len(sys.argv) != 2:
+        print("Usage: python temp_supernode.py <config_file>")
         sys.exit(1)
-    sys.exit(0)
+        
+    config_file = sys.argv[1]
+    success = run_supernode_with_config(config_file)
+    
+    if success:
+        sys.exit(0)
+    else:
+        sys.exit(1)
 """
     
     with open("temp_test_supernode.py", "w") as f:
         f.write(script_content)
+    os.chmod("temp_test_supernode.py", 0o755)  # Make executable
+    
+    # Tạo file cấu hình SuperNode
+    config = {
+        "superlink": "localhost:18443",
+        "log_level": "DEBUG"
+    }
+    
+    if ca_cert_path:
+        config["root_certificates"] = ca_cert_path
+    else:
+        config["insecure"] = True
+        
+    if client_cert_path and client_key_path:
+        config["certificate_chain"] = client_cert_path
+        config["private_key"] = client_key_path
+    
+    config_path = "temp_supernode_config.json"
+    with open(config_path, "w") as f:
+        json.dump(config, f, indent=2)
+        
+    return config_path
 
 def test_without_certificates():
     """
-    Kiểm tra 1: Kết nối mà không có bất kỳ chứng chỉ nào
-    Kết quả mong đợi: Kết nối thất bại
+    Kiểm tra 1: Kết nối mà không có bất kỳ chứng chỉ nào (chế độ insecure)
+    Kết quả mong đợi: Kết nối thất bại vì server yêu cầu TLS
     """
-    print("\n==== Kiểm tra 1: Kết nối không có chứng chỉ ====")
+    print("\n==== Kiểm tra 1: Kết nối không có chứng chỉ (insecure mode) ====")
     print("Đang thử kết nối mà không cung cấp bất kỳ chứng chỉ nào...")
     
-    # Tạo script tạm thời
-    create_temp_supernode_script()
+    # Tạo script tạm thời và file cấu hình
+    config_path = create_temp_supernode_script()
     
     # Chạy script tạm thời
-    result = subprocess.run(["python3", "temp_test_supernode.py"], 
+    result = subprocess.run(["python3", "temp_test_supernode.py", config_path], 
                             capture_output=True, text=True)
     
-    # Xóa script tạm thời
+    # Xóa các file tạm thời
     os.remove("temp_test_supernode.py")
+    os.remove(config_path)
     
     # Kiểm tra kết quả
     if result.returncode != 0:
@@ -115,14 +149,15 @@ def test_with_invalid_ca():
     os.system("openssl req -x509 -newkey rsa:4096 -keyout fake_certs/fake_ca.key -out fake_certs/fake_ca.pem -days 365 -nodes -subj '/CN=FakeCA'")
     
     # Tạo script tạm thời với CA giả
-    create_temp_supernode_script("fake_certs/fake_ca.pem")
+    config_path = create_temp_supernode_script("fake_certs/fake_ca.pem")
     
     # Chạy script tạm thời
-    result = subprocess.run(["python3", "temp_test_supernode.py"],
+    result = subprocess.run(["python3", "temp_test_supernode.py", config_path],
                            capture_output=True, text=True)
     
-    # Xóa script tạm thời
+    # Xóa script tạm thời và file cấu hình
     os.remove("temp_test_supernode.py")
+    os.remove(config_path)
     
     # Dọn dẹp chứng chỉ giả
     import shutil
@@ -137,13 +172,40 @@ def test_with_invalid_ca():
     print("✗ Kiểm tra thất bại: Kết nối thành công một cách bất ngờ!")
     return False
 
-def test_with_supernode_cli():
+def test_with_valid_ca_but_no_client_cert():
     """
-    Kiểm tra 3: Kết nối bằng Flower SuperNode CLI mà không có chứng chỉ hợp lệ
-    Kết quả mong đợi: Kết nối thất bại
-    Lưu ý: Chỉ hoạt động nếu flower-supernode đã được cài đặt
+    Kiểm tra 3: Kết nối với CA hợp lệ nhưng không có chứng chỉ client
+    Kết quả mong đợi: Kết nối thất bại vì yêu cầu mTLS (xác thực hai chiều)
     """
-    print("\n==== Kiểm tra 3: Kết nối với SuperNode CLI mà không cung cấp chứng chỉ ====")
+    print("\n==== Kiểm tra 3: Kết nối với CA hợp lệ nhưng không có chứng chỉ client ====")
+    print("Đang thử kết nối với CA hợp lệ nhưng không có chứng chỉ client...")
+    
+    # Tạo script tạm thời với CA thật nhưng không có chứng chỉ client
+    config_path = create_temp_supernode_script("./certs/ca/ca.pem")
+    
+    # Chạy script tạm thời
+    result = subprocess.run(["python3", "temp_test_supernode.py", config_path],
+                           capture_output=True, text=True)
+    
+    # Xóa script tạm thời và file cấu hình
+    os.remove("temp_test_supernode.py")
+    os.remove(config_path)
+    
+    # Kiểm tra kết quả
+    if result.returncode != 0:
+        error_msg = result.stderr if result.stderr else result.stdout
+        print(f"✓ Kiểm tra thành công: Kết nối thất bại như mong đợi\nLỗi: {error_msg}")
+        return True
+    
+    print("✗ Kiểm tra thất bại: Kết nối thành công một cách bất ngờ!")
+    return False
+
+def test_with_direct_supernode_cli():
+    """
+    Kiểm tra 4: Kết nối trực tiếp bằng flower-supernode CLI
+    Kết quả mong đợi: Kết nối thất bại do không có chứng chỉ
+    """
+    print("\n==== Kiểm tra 4: Kết nối trực tiếp với SuperNode CLI ====")
     
     # Kiểm tra xem flower-supernode có sẵn không
     check_cmd = subprocess.run(["which", "flower-supernode"], 
@@ -157,14 +219,14 @@ def test_with_supernode_cli():
     
     # Chạy flower-supernode với thời gian chờ
     process = subprocess.Popen(
-        ["flower-supernode", "--superlink=localhost:8443"],
+        ["flower-supernode", "--insecure", "--superlink=localhost:18443"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
     )
     
     # Chờ một khoảng thời gian ngắn để kết nối thử nghiệm
-    time.sleep(2)
+    time.sleep(3)
     
     # Kết thúc quá trình
     process.terminate()
@@ -188,7 +250,8 @@ def run_tests():
     results = []
     results.append(test_without_certificates())
     results.append(test_with_invalid_ca())
-    # results.append(test_with_supernode_cli())  # Bỏ ghi chú nếu CLI đã được cài đặt
+    results.append(test_with_valid_ca_but_no_client_cert())
+    results.append(test_with_direct_supernode_cli())
     
     print("\n===== TÓM TẮT KẾT QUẢ KIỂM TRA =====")
     if all(results):
