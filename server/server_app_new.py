@@ -1,22 +1,19 @@
+#!/usr/bin/env python3
 """
-This file demonstrates how to configure a Flower server strategy to use with flower-superlink.
-To use this, first run:
-    pip install "flwr>=1.5.0"
-    
-Then run the superlink with secure certificates:
-    flower-superlink \
-        --ssl-certfile=certs/server/server.pem \
-        --ssl-keyfile=certs/server/server.key \
-        --ssl-ca-certfile=certs/ca/ca.pem \
-        --fleet-api-address=[::]:8443 \
-        --strategy="server.server_superlink:strategy"
+Server app for Flower SuperLink.
+
+When using flower-superlink, we need to define and register a server app
+rather than passing a strategy directly to the command line.
 """
 
-import flwr as fl
-from typing import Dict, List, Optional, Tuple, Union, cast
-from flwr.common import Metrics, Parameters, Scalar, FitIns, EvaluateIns, FitRes, EvaluateRes
-from flwr.server.client_proxy import ClientProxy
+import os
 import logging
+import flwr as fl
+from typing import Dict, List, Optional, Tuple, Union
+from flwr.common import Metrics, Parameters, Scalar
+from flwr.common.context import Context
+from flwr.server import ServerConfig
+from flwr.server.serverapp_components import ServerAppComponents
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -46,7 +43,7 @@ class MnistStrategy(fl.server.strategy.FedAvg):
         
     def configure_fit(
         self, server_round: int, parameters: Parameters, client_manager
-    ) -> List[Tuple[ClientProxy, FitIns]]:
+    ) -> List[Tuple[fl.server.client_proxy.ClientProxy, fl.common.FitIns]]: # Ensure ClientProxy is correctly namespaced
         """Configure the next round of training."""
         self.current_round = server_round
         logger.info(f"Starting round {server_round}/{self.num_rounds} of training")
@@ -64,8 +61,10 @@ class MnistStrategy(fl.server.strategy.FedAvg):
         fit_ins = super().configure_fit(server_round, parameters, client_manager)
         
         # Add our custom config to each client's configuration
-        for _, fit_ins_config in fit_ins:
-            fit_ins_config.config.update(config)
+        if fit_ins:
+            for _, fit_ins_item in fit_ins:
+                if hasattr(fit_ins_item, 'config'):
+                    fit_ins_item.config.update(config)
             
         return fit_ins
     
@@ -86,8 +85,8 @@ class MnistStrategy(fl.server.strategy.FedAvg):
     def aggregate_evaluate(
         self,
         server_round: int,
-        results: List[Tuple[ClientProxy, EvaluateRes]],
-        failures: List[Union[Tuple[ClientProxy, EvaluateRes], BaseException]],
+        results: List[Tuple[fl.server.client_proxy.ClientProxy, fl.common.EvaluateRes]], # Ensure ClientProxy is correctly namespaced
+        failures: List[Union[Tuple[fl.server.client_proxy.ClientProxy, fl.common.EvaluateRes], BaseException]], # Ensure ClientProxy is correctly namespaced
     ) -> Optional[float]:
         """Aggregate evaluation results from clients."""
         if not results:
@@ -109,8 +108,8 @@ class MnistStrategy(fl.server.strategy.FedAvg):
     def aggregate_fit(
         self,
         server_round: int,
-        results: List[Tuple[ClientProxy, FitRes]],
-        failures: List[Union[Tuple[ClientProxy, FitRes], BaseException]],
+        results: List[Tuple[fl.server.client_proxy.ClientProxy, fl.common.FitRes]], # Ensure ClientProxy is correctly namespaced
+        failures: List[Union[Tuple[fl.server.client_proxy.ClientProxy, fl.common.FitRes], BaseException]], # Ensure ClientProxy is correctly namespaced
     ) -> Tuple[Optional[Parameters], Dict[str, Scalar]]:
         """Aggregate training results from clients."""
         # Log the number of clients that successfully completed training
@@ -131,19 +130,51 @@ class MnistStrategy(fl.server.strategy.FedAvg):
         
         return parameters_aggregated, metrics_aggregated
 
-# Create the strategy instance
-# Parameters adjusted for testing - normally you might want more clients and rounds
-strategy = MnistStrategy(
-    min_fit_clients=1,           # Proceed with training if at least 1 client is available
-    min_evaluate_clients=1,       # Proceed with evaluation if at least 1 client is available
-    min_available_clients=1,      # Wait until at least 1 client is available
-    fraction_fit=1.0,             # Sample 100% of available clients for training
-    fraction_evaluate=1.0,        # Sample 100% of available clients for evaluation
-    num_rounds=3,                 # Train for 3 rounds
-)
+# Define a server_fn following the pattern required by Flower SuperLink
+def server_fn(context: Context) -> ServerAppComponents:
+    """Create a ServerAppComponents object that returns strategy and server config."""
+    # Create the strategy
+    strategy = MnistStrategy(
+        min_fit_clients=1,
+        min_evaluate_clients=1,
+        min_available_clients=1,
+        fraction_fit=1.0,
+        fraction_evaluate=1.0,
+        num_rounds=3,
+    )
+    
+    # Set server configuration, using num_rounds from the strategy
+    server_config = ServerConfig(num_rounds=strategy.num_rounds)
+    
+    # Return a ServerAppComponents object with strategy and config
+    return ServerAppComponents(strategy=strategy, config=server_config)
 
-# If this script is run directly, it will display information but not start a server
+# Create and expose the server app object for flower-superlink
+app = fl.server.ServerApp(server_fn=server_fn)
+
 if __name__ == "__main__":
-    print("This script defines a federated learning strategy for Flower superlink.")
-    print("Run flower-superlink with the --strategy parameter to use this strategy:")
-    print("flower-superlink --strategy=\"server.server_superlink:strategy\" ...")
+    logger.info("Starting Flower ServerApp with MnistStrategy for SuperLink.")
+    
+    # Create strategy directly
+    strategy = MnistStrategy(
+        min_fit_clients=1,
+        min_evaluate_clients=1,
+        min_available_clients=1,
+        fraction_fit=1.0,
+        fraction_evaluate=1.0,
+        num_rounds=3,
+    )
+    
+    # Set server configuration
+    server_config = fl.server.ServerConfig(num_rounds=3)
+    
+    # Import and run the server
+    from flwr.server import start_server
+    
+    # Start server with strategy
+    start_server(
+        server_address="0.0.0.0:9091",
+        config=server_config,
+        strategy=strategy,
+    )
+    logger.info("Flower ServerApp has finished.")

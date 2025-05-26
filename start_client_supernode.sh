@@ -1,22 +1,35 @@
 #!/bin/bash
+# Script to run client with secure SSL/TLS using Flower SuperNode
 
-# Get the base directory
+# Get the project base directory
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CERT_DIR="$BASE_DIR/certs"
+HOST=${1:-localhost}
+PORT=${2:-18443}
+CLIENT_ID=${3:-0}
 
-# Start the Flower client using the flower-supernode CLI tool with secure mTLS
-echo "Starting Flower supernode client with secure mTLS connection..."
-cd "${BASE_DIR}"
-
-# Set PYTHONPATH to include the current directory for module imports
-export PYTHONPATH="${BASE_DIR}:${PYTHONPATH}"
-
-# Try to use the flower-supernode CLI with the appropriate parameters
-if command -v flower-supernode &> /dev/null; then
-    echo "Using flower-supernode CLI..."
-    flower-supernode \
-        --superlink='localhost:8443' \
-        --root-certificates="${BASE_DIR}/certs/ca/ca.pem"
-else
-    echo "flower-supernode command not found. Falling back to direct Python execution..."
-    python "${BASE_DIR}/client/client_supernode.py"
+# Check and regenerate certificates if needed
+if [ -x "$BASE_DIR/regenerate_certificates.sh" ]; then
+    echo "Checking and regenerating certificates if needed..."
+    "$BASE_DIR/regenerate_certificates.sh"
 fi
+
+# Set Python path to include the project root
+export PYTHONPATH="$BASE_DIR:$PYTHONPATH"
+
+# Set FLOWER_CLIENT_ID environment variable
+export FLOWER_CLIENT_ID="$CLIENT_ID"
+
+# Config file path
+NODE_CONFIG_FILE="$BASE_DIR/client/node_config.json"
+
+echo "Starting Flower SuperNode client with ID $CLIENT_ID connecting to $HOST:$PORT..."
+echo "Using node config from $NODE_CONFIG_FILE"
+
+# Start the client with secure connection
+flower-supernode \
+    --superlink="$HOST:$PORT" \
+    --root-certificates="$CERT_DIR/ca/ca.pem" \
+    --node-config="$NODE_CONFIG_FILE"
+
+echo "Flower SuperNode client has terminated."

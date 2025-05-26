@@ -1,0 +1,371 @@
+Checking and regenerating certificates if needed...
+============================================
+Kiểm tra và tạo lại chứng chỉ SSL/TLS
+============================================
+[OK] Server certificate tồn tại
+[OK] Server key tồn tại
+[OK] CA certificate tồn tại
+[OK] CA key tồn tại
+Tạo chain certificate từ server và CA certificates...
+Đã tạo chain certificate: ./certs/server/chain.pem
+./certs/server/server.pem: OK
+Tạo PKCS#12 certificate...
+Đã tạo PKCS#12 certificate: ./certs/combined/server.pfx
+============================================
+Kiểm tra kết quả:
+============================================
+1. Server certificate information:
+        Issuer: CN=Flower CA
+        Validity
+        Subject: CN=localhost
+        Subject Public Key Info:
+            X509v3 Subject Alternative Name: 
+            X509v3 Subject Key Identifier: 
+2. CA certificate information:
+        Issuer: CN=Flower CA
+        Validity
+        Subject: CN=Flower CA
+        Subject Public Key Info:
+            X509v3 Subject Key Identifier: 
+3. Xác thực server certificate với CA:
+./certs/server/server.pem: OK
+Xác thực thành công!
+============================================
+Chứng chỉ SSL/TLS đã sẵn sàng được sử dụng.
+============================================
+Gợi ý khởi động server:
+python run_mnist_flower_datasets.py --mode server --secure --port 18443
+
+Gợi ý khởi động client (sau khi server đã chạy):
+python run_mnist_flower_datasets.py --mode client --secure --host localhost --port 18443
+Ensuring the chain certificate is properly formatted...
+Creating proper SSL chain certificate for Flower...
+Backed up existing chain certificate to /home/vngbthang/Documents/demoie105/ie105-flower-openssl/certs/server/chain.pem.bak
+Chain certificate created successfully at /home/vngbthang/Documents/demoie105/ie105-flower-openssl/certs/server/chain.pem
+Verifying the chain certificate...
+/home/vngbthang/Documents/demoie105/ie105-flower-openssl/certs/server/server.pem: OK
+Server certificate verified successfully with CA!
+Chain certificate information:
+        Issuer: CN=Flower CA
+        Validity
+        Subject: CN=localhost
+        Subject Public Key Info:
+            X509v3 Subject Alternative Name: 
+            X509v3 Subject Key Identifier: 
+Done.
+Starting Flower SuperLink server on port 18443 with secure TLS...
+Using custom executor from server.executor:executor
+[92mINFO [0m:      Starting Flower SuperLink
+2025-05-26 08:00:42,596 - flower-mnist-superlink-executor - INFO - Initialized MnistExecutor with 3 rounds
+2025-05-26 08:00:42,596 - flower-mnist-superlink-executor - INFO - Using min_fit_clients=1, min_evaluate_clients=1
+2025-05-26 08:00:42,596 - flower-mnist-superlink-executor - INFO - Updated config: {'min_fit_clients': 1, 'min_evaluate_clients': 1, 'min_available_clients': 1, 'num_rounds': 3, 'verbose': True}
+2025-05-26 08:00:42,596 - flower-mnist-superlink-executor - INFO - Initializing MNIST executor
+2025-05-26 08:00:42,597 - flower-mnist-superlink-executor - INFO - Will auto-start training in 20 seconds...
+2025-05-26 08:00:42,597 - flower-mnist-superlink-executor - INFO - Auto-start thread initialized
+[92mINFO [0m:      Flower Deployment Engine: Starting Exec API on 0.0.0.0:9093
+2025-05-26 08:00:42,605 - flwr - INFO - Flower Deployment Engine: Starting Exec API on 0.0.0.0:9093
+[92mINFO [0m:      Flower ECE: Starting ServerAppIo API (gRPC-rere) on 0.0.0.0:9091
+2025-05-26 08:00:42,608 - flwr - INFO - Flower ECE: Starting ServerAppIo API (gRPC-rere) on 0.0.0.0:9091
+2025-05-26 08:00:42,609 - flwr - DEBUG - Automatic node authentication enabled
+[92mINFO [0m:      Flower ECE: Starting Fleet API (gRPC-rere) on [::]:18443
+2025-05-26 08:00:42,610 - flwr - INFO - Flower ECE: Starting Fleet API (gRPC-rere) on [::]:18443
+2025-05-26 08:00:42,611 - flwr - DEBUG - Started flwr-serverapp scheduler thread.
+2025-05-26 08:00:42,611 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:02,597 - flower-mnist-superlink-executor - INFO - Auto-starting federated learning run
+2025-05-26 08:01:02,598 - flower-mnist-superlink-executor - INFO - Starting MNIST federated learning run
+2025-05-26 08:01:02,598 - flower-mnist-superlink-executor - INFO - Starting first round directly
+2025-05-26 08:01:02,598 - flower-mnist-superlink-executor - INFO - Starting fit_round 1/3
+2025-05-26 08:01:02,691 - flower-mnist-superlink-executor - INFO - Initialized model parameters for first round
+2025-05-26 08:01:02,691 - flower-mnist-superlink-executor - INFO - Directly calling _fit_clients for round 1
+2025-05-26 08:01:02,691 - flower-mnist-superlink-executor - DEBUG - Trying to get available client nodes
+2025-05-26 08:01:02,691 - flower-mnist-superlink-executor - WARNING - Couldn't get registered nodes: 'MnistExecutor' object has no attribute 'get_registered_nodes'
+2025-05-26 08:01:02,691 - flower-mnist-superlink-executor - INFO - Round 1: Using fallback client_ids=['0']
+2025-05-26 08:01:02,692 - flower-mnist-superlink-executor - INFO - Round 1: Starting client training with 1 clients
+2025-05-26 08:01:02,692 - flower-mnist-superlink-executor - ERROR - Error during instruction execution in round 1: module 'flwr.common' has no attribute 'Instruction'
+Traceback (most recent call last):
+  File "/home/vngbthang/Documents/demoie105/ie105-flower-openssl/server/executor.py", line 181, in _fit_clients
+    instruction = fl.common.Instruction(
+                  ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'flwr.common' has no attribute 'Instruction'
+2025-05-26 08:01:02,693 - flower-mnist-superlink-executor - INFO - Scheduling next round: 2
+2025-05-26 08:01:02,693 - flower-mnist-superlink-executor - INFO - Federated learning run has been started
+2025-05-26 08:01:05,693 - flower-mnist-superlink-executor - INFO - Starting fit_round 2/3
+2025-05-26 08:01:05,693 - flower-mnist-superlink-executor - INFO - Directly calling _fit_clients for round 2
+2025-05-26 08:01:05,693 - flower-mnist-superlink-executor - DEBUG - Trying to get available client nodes
+2025-05-26 08:01:05,694 - flower-mnist-superlink-executor - WARNING - Couldn't get registered nodes: 'MnistExecutor' object has no attribute 'get_registered_nodes'
+2025-05-26 08:01:05,694 - flower-mnist-superlink-executor - INFO - Round 2: Using fallback client_ids=['0']
+2025-05-26 08:01:05,694 - flower-mnist-superlink-executor - INFO - Round 2: Starting client training with 1 clients
+2025-05-26 08:01:05,694 - flower-mnist-superlink-executor - ERROR - Error during instruction execution in round 2: module 'flwr.common' has no attribute 'Instruction'
+Traceback (most recent call last):
+  File "/home/vngbthang/Documents/demoie105/ie105-flower-openssl/server/executor.py", line 181, in _fit_clients
+    instruction = fl.common.Instruction(
+                  ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'flwr.common' has no attribute 'Instruction'
+2025-05-26 08:01:05,695 - flower-mnist-superlink-executor - INFO - Scheduling next round: 3
+2025-05-26 08:01:08,695 - flower-mnist-superlink-executor - INFO - Starting fit_round 3/3
+2025-05-26 08:01:08,695 - flower-mnist-superlink-executor - INFO - Directly calling _fit_clients for round 3
+2025-05-26 08:01:08,695 - flower-mnist-superlink-executor - DEBUG - Trying to get available client nodes
+2025-05-26 08:01:08,696 - flower-mnist-superlink-executor - WARNING - Couldn't get registered nodes: 'MnistExecutor' object has no attribute 'get_registered_nodes'
+2025-05-26 08:01:08,696 - flower-mnist-superlink-executor - INFO - Round 3: Using fallback client_ids=['0']
+2025-05-26 08:01:08,696 - flower-mnist-superlink-executor - INFO - Round 3: Starting client training with 1 clients
+2025-05-26 08:01:08,696 - flower-mnist-superlink-executor - ERROR - Error during instruction execution in round 3: module 'flwr.common' has no attribute 'Instruction'
+Traceback (most recent call last):
+  File "/home/vngbthang/Documents/demoie105/ie105-flower-openssl/server/executor.py", line 181, in _fit_clients
+    instruction = fl.common.Instruction(
+                  ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'flwr.common' has no attribute 'Instruction'
+2025-05-26 08:01:22,541 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.CreateNode] Request ping_interval=30.0
+2025-05-26 08:01:22,558 - flwr - INFO - [Fleet.CreateNode] Request ping_interval=30.0
+2025-05-26 08:01:22,558 - flwr - DEBUG - [Fleet.CreateNode] Request: {'pingInterval': 30.0}
+2025-05-26 08:01:22,558 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.CreateNode] Created node_id=2962164233289378657
+2025-05-26 08:01:22,559 - flwr - INFO - [Fleet.CreateNode] Created node_id=2962164233289378657
+2025-05-26 08:01:22,559 - flwr - DEBUG - [Fleet.CreateNode] Response: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:22,559 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:22,562 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:22,564 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:22,566 - flwr - DEBUG - [Fleet.Ping] Request: {'node': {'nodeId': '2962164233289378657'}, 'pingInterval': 30.0}
+2025-05-26 08:01:22,567 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:22,567 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:22,568 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:22,568 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:25,570 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:25,573 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:25,573 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:25,573 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:28,576 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:28,578 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:28,578 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:28,579 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:31,581 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:31,583 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:31,584 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:31,584 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:34,587 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:34,589 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:34,590 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:34,590 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:37,593 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:37,595 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:37,595 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:37,595 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:40,598 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:40,600 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:40,600 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:40,600 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:40,930 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:40,933 - flwr - DEBUG - [Fleet.Ping] Request: {'node': {'nodeId': '2962164233289378657'}, 'pingInterval': 30.0}
+2025-05-26 08:01:40,933 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:43,603 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:43,605 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:43,605 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:43,605 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:46,608 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:46,610 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:46,610 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:46,611 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:49,613 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:49,615 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:49,615 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:49,615 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:52,618 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:52,620 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:52,620 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:52,620 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:55,623 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:55,625 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:55,625 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:55,625 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:01:58,628 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:58,630 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:01:58,631 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:01:58,631 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:01,633 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:01,636 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:01,636 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:01,637 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:02,031 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:02,033 - flwr - DEBUG - [Fleet.Ping] Request: {'node': {'nodeId': '2962164233289378657'}, 'pingInterval': 30.0}
+2025-05-26 08:02:02,034 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:04,639 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:04,641 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:04,641 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:04,641 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:07,644 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:07,647 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:07,647 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:07,647 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:10,650 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:10,653 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:10,653 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:10,653 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:13,656 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:13,658 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:13,658 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:13,658 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:16,661 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:16,663 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:16,664 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:16,664 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:19,666 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:19,668 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:19,669 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:19,669 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:21,240 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:21,243 - flwr - DEBUG - [Fleet.Ping] Request: {'node': {'nodeId': '2962164233289378657'}, 'pingInterval': 30.0}
+2025-05-26 08:02:21,243 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:22,671 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:22,674 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:22,674 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:22,674 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:25,677 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:25,679 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:25,679 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:25,679 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:28,681 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:28,685 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:28,685 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:28,686 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:31,688 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:31,690 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:31,690 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:31,690 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:34,692 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:34,694 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:34,695 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:34,695 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:37,698 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:37,701 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:37,701 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:37,701 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:40,703 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:40,705 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:40,705 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:40,706 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:41,251 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:41,254 - flwr - DEBUG - [Fleet.Ping] Request: {'node': {'nodeId': '2962164233289378657'}, 'pingInterval': 30.0}
+2025-05-26 08:02:41,254 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:43,708 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:43,710 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:43,711 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:43,711 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:46,714 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:46,715 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:46,716 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:46,716 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:49,718 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:49,721 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:49,721 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:49,721 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:52,724 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:52,726 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:52,726 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:52,726 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:55,729 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:55,731 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:55,732 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:55,732 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:58,734 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:58,736 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:02:58,736 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:02:58,736 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:59,630 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:02:59,632 - flwr - DEBUG - [Fleet.Ping] Request: {'node': {'nodeId': '2962164233289378657'}, 'pingInterval': 30.0}
+2025-05-26 08:02:59,632 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:01,740 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:01,742 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:01,743 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:03:01,743 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:04,745 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:04,748 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:04,748 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:03:04,748 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:07,751 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:07,754 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:07,754 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:03:07,754 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:10,757 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:10,760 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:10,760 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:03:10,760 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:13,762 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:13,765 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:13,765 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:03:13,765 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:16,768 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:16,770 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:16,771 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:03:16,771 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:19,773 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:19,776 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:19,776 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:03:19,776 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:21,179 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:21,182 - flwr - DEBUG - [Fleet.Ping] Request: {'node': {'nodeId': '2962164233289378657'}, 'pingInterval': 30.0}
+2025-05-26 08:03:21,182 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:22,779 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:22,782 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:22,782 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:03:22,782 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:25,786 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:25,788 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:25,788 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:03:25,788 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:28,790 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:28,792 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:28,792 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:03:28,792 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:31,794 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:31,796 - flwr - INFO - [Fleet.PullMessages] node_id=2962164233289378657
+2025-05-26 08:03:31,797 - flwr - DEBUG - [Fleet.PullMessages] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:03:31,797 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:03:33,908 - flwr - DEBUG - Using InMemoryState
+[92mINFO [0m:      [Fleet.DeleteNode] Delete node_id=2962164233289378657
+2025-05-26 08:03:33,910 - flwr - INFO - [Fleet.DeleteNode] Delete node_id=2962164233289378657
+2025-05-26 08:03:33,911 - flwr - DEBUG - [Fleet.DeleteNode] Request: {'node': {'nodeId': '2962164233289378657'}}
+2025-05-26 08:03:33,911 - flwr - DEBUG - Using InMemoryState

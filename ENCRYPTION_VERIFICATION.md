@@ -49,28 +49,43 @@ Trong Học Liên Hợp, việc bảo vệ các tham số mô hình trong quá t
 
 ```bash
 # Khởi động Wireshark
+sudo wireshark
 wireshark
 ```
 
 Sau khi Wireshark mở, chọn interface mạng (thường là loopback cho kết nối local) và thiết lập bộ lọc:
 ```
-tcp.port == 8443
+tcp.port == 18443 && tls
+```
+
+Hoặc nếu bạn sử dụng cổng khác:
+```
+tcp.port == [PORT_NUMBER] && tls
 ```
 
 ### 2. Khởi động server và client Flower
 
 Trong terminal thứ nhất:
 ```bash
-python mnist_federated_learning.py
-# Chọn 1 để chạy server
-# Chọn Y để sử dụng TLS/SSL
+# Cách đơn giản nhất (sử dụng script run_easy.sh)
+./run_easy.sh
+# Chọn 1 để chạy server bảo mật (SSL/TLS) - cổng 18443
 ```
 
 Trong terminal thứ hai:
 ```bash
-python mnist_federated_learning.py
-# Chọn 2 để chạy client
-# Chọn Y để sử dụng TLS/SSL
+./run_easy.sh
+# Chọn 3 để chạy client bảo mật
+# Nhập các tham số như client ID, cổng, địa chỉ host hoặc nhấn Enter để sử dụng giá trị mặc định
+```
+
+Hoặc sử dụng cách truyền thống:
+```bash
+# Terminal thứ nhất
+python run_mnist_flower_datasets.py --mode server --secure --port 18443
+
+# Terminal thứ hai
+python run_mnist_flower_datasets.py --mode client --secure --client-id 0 --host localhost --port 18443
 ```
 
 ### 3. Phân tích gói tin TLS

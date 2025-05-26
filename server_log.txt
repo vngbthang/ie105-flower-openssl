@@ -1,0 +1,118 @@
+Checking and regenerating certificates if needed...
+============================================
+Kiểm tra và tạo lại chứng chỉ SSL/TLS
+============================================
+[OK] Server certificate tồn tại
+[OK] Server key tồn tại
+[OK] CA certificate tồn tại
+[OK] CA key tồn tại
+Tạo chain certificate từ server và CA certificates...
+Đã tạo chain certificate: ./certs/server/chain.pem
+./certs/server/server.pem: OK
+Tạo PKCS#12 certificate...
+Đã tạo PKCS#12 certificate: ./certs/combined/server.pfx
+============================================
+Kiểm tra kết quả:
+============================================
+1. Server certificate information:
+        Issuer: CN=Flower CA
+        Validity
+        Subject: CN=localhost
+        Subject Public Key Info:
+            X509v3 Subject Alternative Name: 
+            X509v3 Subject Key Identifier: 
+2. CA certificate information:
+        Issuer: CN=Flower CA
+        Validity
+        Subject: CN=Flower CA
+        Subject Public Key Info:
+            X509v3 Subject Key Identifier: 
+3. Xác thực server certificate với CA:
+./certs/server/server.pem: OK
+Xác thực thành công!
+============================================
+Chứng chỉ SSL/TLS đã sẵn sàng được sử dụng.
+============================================
+Gợi ý khởi động server:
+python run_mnist_flower_datasets.py --mode server --secure --port 18443
+
+Gợi ý khởi động client (sau khi server đã chạy):
+python run_mnist_flower_datasets.py --mode client --secure --host localhost --port 18443
+Ensuring the chain certificate is properly formatted...
+Creating proper SSL chain certificate for Flower...
+Backed up existing chain certificate to /home/vngbthang/Documents/demoie105/ie105-flower-openssl/certs/server/chain.pem.bak
+Chain certificate created successfully at /home/vngbthang/Documents/demoie105/ie105-flower-openssl/certs/server/chain.pem
+Verifying the chain certificate...
+/home/vngbthang/Documents/demoie105/ie105-flower-openssl/certs/server/server.pem: OK
+Server certificate verified successfully with CA!
+Chain certificate information:
+        Issuer: CN=Flower CA
+        Validity
+        Subject: CN=localhost
+        Subject Public Key Info:
+            X509v3 Subject Alternative Name: 
+            X509v3 Subject Key Identifier: 
+Done.
+Starting Flower SuperLink server on port 18443 with secure TLS...
+Using fleet API port: 18443
+Using server app API port: 9092
+Starting Flower SuperLink server on port 18443
+[92mINFO [0m:      Starting Flower SuperLink
+2025-05-26 08:31:19,478 - flower-mnist-superlink-executor - INFO - Initialized MnistExecutor with 3 rounds
+2025-05-26 08:31:19,478 - flower-mnist-superlink-executor - INFO - Using min_fit_clients=1, min_evaluate_clients=1
+2025-05-26 08:31:19,479 - flower-mnist-superlink-executor - INFO - Updated config: {'min_fit_clients': 1, 'min_evaluate_clients': 1, 'min_available_clients': 1, 'num_rounds': 3, 'verbose': True}
+2025-05-26 08:31:19,479 - flower-mnist-superlink-executor - INFO - Initializing MNIST executor
+2025-05-26 08:31:19,480 - flower-mnist-superlink-executor - INFO - Will auto-start training in 20 seconds...
+2025-05-26 08:31:19,480 - flower-mnist-superlink-executor - INFO - Auto-start thread initialized
+[92mINFO [0m:      Flower Deployment Engine: Starting Exec API on 0.0.0.0:9093
+2025-05-26 08:31:19,494 - flwr - INFO - Flower Deployment Engine: Starting Exec API on 0.0.0.0:9093
+[92mINFO [0m:      Flower ECE: Starting ServerAppIo API (gRPC-rere) on 0.0.0.0:9091
+2025-05-26 08:31:19,496 - flwr - INFO - Flower ECE: Starting ServerAppIo API (gRPC-rere) on 0.0.0.0:9091
+2025-05-26 08:31:19,498 - flwr - DEBUG - Automatic node authentication enabled
+[92mINFO [0m:      Flower ECE: Starting Fleet API (gRPC-rere) on [::]:18443
+2025-05-26 08:31:19,499 - flwr - INFO - Flower ECE: Starting Fleet API (gRPC-rere) on [::]:18443
+2025-05-26 08:31:19,500 - flwr - DEBUG - Started flwr-serverapp scheduler thread.
+2025-05-26 08:31:19,500 - flwr - DEBUG - Using InMemoryState
+2025-05-26 08:31:39,480 - flower-mnist-superlink-executor - INFO - Auto-starting federated learning run
+2025-05-26 08:31:39,480 - flower-mnist-superlink-executor - INFO - Starting MNIST federated learning run
+2025-05-26 08:31:39,480 - flower-mnist-superlink-executor - INFO - Starting first round directly
+2025-05-26 08:31:39,480 - flower-mnist-superlink-executor - INFO - Starting fit_round 1/3
+2025-05-26 08:31:39,505 - flower-mnist-superlink-executor - INFO - Initialized model parameters for first round
+2025-05-26 08:31:39,505 - flower-mnist-superlink-executor - INFO - Directly calling _fit_clients for round 1
+2025-05-26 08:31:39,505 - flower-mnist-superlink-executor - DEBUG - Trying to get available client nodes
+2025-05-26 08:31:39,505 - flower-mnist-superlink-executor - WARNING - Couldn't get registered nodes: 'MnistExecutor' object has no attribute 'get_registered_nodes'
+2025-05-26 08:31:39,505 - flower-mnist-superlink-executor - INFO - Round 1: Using fallback client_ids=['0']
+2025-05-26 08:31:39,505 - flower-mnist-superlink-executor - INFO - Round 1: Starting client training with 1 clients
+2025-05-26 08:31:39,505 - flower-mnist-superlink-executor - ERROR - Error during instruction execution in round 1: module 'flwr.common' has no attribute 'Instruction'
+Traceback (most recent call last):
+  File "/home/vngbthang/Documents/demoie105/ie105-flower-openssl/server/executor.py", line 181, in _fit_clients
+    instruction = fl.common.Instruction(
+                  ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'flwr.common' has no attribute 'Instruction'
+2025-05-26 08:31:39,506 - flower-mnist-superlink-executor - INFO - Scheduling next round: 2
+2025-05-26 08:31:39,507 - flower-mnist-superlink-executor - INFO - Federated learning run has been started
+2025-05-26 08:31:42,507 - flower-mnist-superlink-executor - INFO - Starting fit_round 2/3
+2025-05-26 08:31:42,507 - flower-mnist-superlink-executor - INFO - Directly calling _fit_clients for round 2
+2025-05-26 08:31:42,507 - flower-mnist-superlink-executor - DEBUG - Trying to get available client nodes
+2025-05-26 08:31:42,508 - flower-mnist-superlink-executor - WARNING - Couldn't get registered nodes: 'MnistExecutor' object has no attribute 'get_registered_nodes'
+2025-05-26 08:31:42,508 - flower-mnist-superlink-executor - INFO - Round 2: Using fallback client_ids=['0']
+2025-05-26 08:31:42,508 - flower-mnist-superlink-executor - INFO - Round 2: Starting client training with 1 clients
+2025-05-26 08:31:42,508 - flower-mnist-superlink-executor - ERROR - Error during instruction execution in round 2: module 'flwr.common' has no attribute 'Instruction'
+Traceback (most recent call last):
+  File "/home/vngbthang/Documents/demoie105/ie105-flower-openssl/server/executor.py", line 181, in _fit_clients
+    instruction = fl.common.Instruction(
+                  ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'flwr.common' has no attribute 'Instruction'
+2025-05-26 08:31:42,509 - flower-mnist-superlink-executor - INFO - Scheduling next round: 3
+2025-05-26 08:31:45,509 - flower-mnist-superlink-executor - INFO - Starting fit_round 3/3
+2025-05-26 08:31:45,510 - flower-mnist-superlink-executor - INFO - Directly calling _fit_clients for round 3
+2025-05-26 08:31:45,510 - flower-mnist-superlink-executor - DEBUG - Trying to get available client nodes
+2025-05-26 08:31:45,510 - flower-mnist-superlink-executor - WARNING - Couldn't get registered nodes: 'MnistExecutor' object has no attribute 'get_registered_nodes'
+2025-05-26 08:31:45,510 - flower-mnist-superlink-executor - INFO - Round 3: Using fallback client_ids=['0']
+2025-05-26 08:31:45,510 - flower-mnist-superlink-executor - INFO - Round 3: Starting client training with 1 clients
+2025-05-26 08:31:45,510 - flower-mnist-superlink-executor - ERROR - Error during instruction execution in round 3: module 'flwr.common' has no attribute 'Instruction'
+Traceback (most recent call last):
+  File "/home/vngbthang/Documents/demoie105/ie105-flower-openssl/server/executor.py", line 181, in _fit_clients
+    instruction = fl.common.Instruction(
+                  ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'flwr.common' has no attribute 'Instruction'

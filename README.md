@@ -51,7 +51,25 @@ chmod +x generate_certs.sh
 
 ### 3. Chạy Mô Hình MNIST
 
-#### 3.1. Chạy với `mnist_federated_learning.py` (Cách cũ)
+#### 3.1. Chạy với `run_easy.sh` (Cách đơn giản nhất)
+
+Script này cung cấp giao diện menu đơn giản để chạy Federated Learning:
+
+```bash
+chmod +x run_easy.sh  # Cấp quyền thực thi nếu chưa có
+./run_easy.sh
+```
+
+Chọn các tùy chọn từ menu:
+- 1: Chạy server bảo mật (SSL/TLS) 
+- 2: Chạy server không bảo mật
+- 3: Chạy client bảo mật
+- 4: Chạy client không bảo mật
+- 5: Chạy chế độ mô phỏng
+
+**Xem hướng dẫn chi tiết**: [RUNNING_GUIDE.md](RUNNING_GUIDE.md)
+
+#### 3.2. Chạy với `mnist_federated_learning.py` (Cách cũ)
 
 ```bash
 python mnist_federated_learning.py
@@ -59,7 +77,7 @@ python mnist_federated_learning.py
 
 Chọn 1 để chạy server và 2 để chạy client trong các terminal khác nhau. Chọn có hoặc không sử dụng TLS/SSL.
 
-#### 3.2. Chạy với `run_mnist_flower_datasets.sh` (Cách mới, khuyến khích)
+#### 3.3. Chạy với `run_mnist_flower_datasets.sh` (Cách trực tiếp với nhiều tùy chọn)
 
 Script này sử dụng `flwr-datasets` để tải và quản lý dữ liệu MNIST, đồng thời cung cấp nhiều tùy chọn hơn để chạy federated learning.
 
@@ -111,13 +129,29 @@ Dưới đây là một số ví dụ:
   ./run_mnist_flower_datasets.sh --timeout 600
   ```
 
-### 4. Phân Tích Bảo Mật
+### 4. Phân Tích Bảo Mật với Wireshark
 
 Sử dụng Wireshark để bắt và phân tích gói tin trong quá trình huấn luyện:
-1. Mở Wireshark và chọn interface (thường là loopback cho kết nối local)
-2. Thiết lập bộ lọc: `tcp.port == 8443`
-3. Bắt đầu bắt gói tin và chạy quá trình huấn luyện mô hình
-4. Phân tích các gói tin đã bắt được để kiểm tra bảo mật TLS/SSL
+
+#### 4.1. Thiết lập Wireshark
+1. Mở Wireshark với quyền root: `sudo wireshark`
+2. Chọn interface (thường là `lo` cho kết nối local hoặc `eth0`/`wlan0` cho kết nối mạng)
+3. Bắt đầu bắt gói tin bằng cách nhấn vào biểu tượng "Start Capturing Packets"
+
+#### 4.2. Thiết lập bộ lọc:
+- **Kết nối bảo mật**: `tcp.port == 18443 && tls`
+- **Kết nối không bảo mật**: `tcp.port == 18080`
+
+#### 4.3. Phân tích gói tin:
+- Với kết nối bảo mật, quan sát quá trình bắt tay TLS và các gói "Application Data" được mã hóa
+- Với kết nối không bảo mật, xem dữ liệu gRPC được truyền
+
+#### 4.4. So sánh hiệu suất:
+- Sử dụng "Statistics" > "I/O Graph" để so sánh lưu lượng
+- Sử dụng "Statistics" > "TCP Stream Graphs" > "Round Trip Time" để so sánh độ trễ
+
+#### 4.5. Hướng dẫn chi tiết:
+Xem hướng dẫn phân tích đầy đủ trong [RUNNING_GUIDE.md](RUNNING_GUIDE.md)
 
 ## Mô hình Học Máy
 
