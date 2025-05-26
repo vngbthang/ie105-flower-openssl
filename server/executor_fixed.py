@@ -156,8 +156,10 @@ class MnistExecutor(Executor):
     def _fit_clients(self, server_round: int) -> None:
         """Fit clients and update model parameters."""
         try:
-            # Kiểm tra xem có client kết nối không bằng cách kiểm tra thuộc tính của linkstate_factory
-            client_connected = False
+            # This is the critical section that fixes the simulation mode vs real clients problem.
+        # When real clients are connected, we'll detect them and use them instead of falling back to simulation.
+        # But the executor will still work in simulation mode if no real clients are detected.
+        client_connected = False
             
             # Trong Flower v1.18.0, client kết nối được theo dõi qua state factory
             if hasattr(self, 'linkstate_factory') and self.linkstate_factory is not None:

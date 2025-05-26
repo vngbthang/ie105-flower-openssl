@@ -176,3 +176,37 @@ Tuy nhiên, với tài nguyên phần cứng hiện đại, những chi phí nà
 ## 10. Tóm tắt
 
 TLS/SSL trong Flower cung cấp một lớp bảo mật quan trọng cho việc truyền tải tham số mô hình và dữ liệu học máy. Việc triển khai mTLS đảm bảo cả client và server đều được xác thực, giúp bảo vệ chống lại các cuộc tấn công man-in-the-middle và đảm bảo tính riêng tư trong quá trình học liên hợp.
+
+## Tài liệu tham khảo
+
+1. **TLS/SSL và Giao thức**
+   - [RFC 8446: The Transport Layer Security (TLS) Protocol Version 1.3](https://datatracker.ietf.org/doc/html/rfc8446)
+   - [RFC 5246: The Transport Layer Security (TLS) Protocol Version 1.2](https://datatracker.ietf.org/doc/html/rfc5246)
+   - [RFC 8446 Implementation Considerations](https://datatracker.ietf.org/doc/html/rfc8446#section-8)
+   - Rescorla, E. (2000). "SSL and TLS: Designing and Building Secure Systems." Addison-Wesley.
+
+2. **gRPC và TLS**
+   - [gRPC Authentication](https://grpc.io/docs/guides/auth/)
+   - [gRPC Security Best Practices](https://grpc.io/blog/grpc-security-best-practices/)
+   - [gRPC Transport Security](https://grpc.io/docs/guides/auth/tls-encryption/)
+
+3. **OpenSSL**
+   - [OpenSSL Official Documentation](https://www.openssl.org/docs/)
+   - [OpenSSL Command-Line HOWTO](https://www.madboa.com/geek/openssl/)
+   - [OpenSSL Cookbook](https://www.feistyduck.com/library/openssl-cookbook/)
+   - Viega, J., et al. (2002). "Network Security with OpenSSL." O'Reilly Media.
+
+4. **PKI và Certificate Management**
+   - [X.509 Certificate Standard](https://www.itu.int/rec/T-REC-X.509)
+   - [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/)
+   - [Certificate Transparency](https://certificate.transparency.dev/)
+   - Adams, C., & Lloyd, S. (2003). "Understanding PKI: Concepts, Standards, and Deployment Considerations." Addison-Wesley.
+
+5. **Mutual TLS (mTLS)**
+   - [Mutual TLS Authentication](https://datatracker.ietf.org/doc/html/rfc8446#section-4.6.2)
+   - [mTLS Best Practices](https://www.cloudflare.com/learning/access-management/what-is-mutual-tls/)
+   - Stallings, W. (2017). "Network Security Essentials: Applications and Standards." Pearson.
+
+6. **Flower Framework và TLS**
+   - [Flower Security Documentation](https://flower.dev/docs/framework/how-to-use-ssl-tls.html)
+   - [Flower gRPC Implementation](https://github.com/adap/flower/tree/main/src/py/flwr/transport/grpc)

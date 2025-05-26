@@ -1,6 +1,19 @@
 #!/bin/bash
 # Script tổng hợp để chạy Flower Federated Learning dễ dàng
 # Với các cập nhật mới để đảm bảo executor_fixed được sử dụng đúng cách và hỗ trợ bắt gói tin Wireshark
+#
+# Các tùy chọn hiện tại:
+# 1: Chạy server bảo mật (SSL/TLS)
+# 2: Chạy server không bảo mật
+# 3: Chạy client bảo mật
+# 4: Chạy client không bảo mật
+# 5: Chạy chế độ mô phỏng
+# 6: Sửa chữa chứng chỉ SSL/TLS
+# 7: Chạy kiểm tra kết nối
+# 8: Chạy bắt gói tin Wireshark
+# 9: Thoát
+#
+# Cập nhật mới nhất: Hỗ trợ Wireshark và phát hiện client thực tốt hơn với executor_fixed.py
 
 # Màu sắc
 RED='\033[0;31m'
@@ -11,9 +24,6 @@ NC='\033[0m' # No Color
 
 # Thư mục gốc
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    echo -e "${BLUE}2)${NC} Chạy server không bảo mật - cổng 18080"
-    echo -e "${BLUE}3)${NC} Chạy client bảo mật"
-    echo -e "${BLUE}4)${NC} Chạy client không bảo mật"
     echo -e "${BLUE}5)${NC} Chạy chế độ mô phỏng (simulation)"
     echo -e "${BLUE}6)${NC} Sửa chữa chứng chỉ SSL/TLS"
     echo -e "${BLUE}7)${NC} Chạy kiểm tra kết nối"
@@ -124,9 +134,10 @@ show_menu() {
     echo -e "${BLUE}5)${NC} Chạy chế độ mô phỏng (simulation)"
     echo -e "${BLUE}6)${NC} Sửa chữa chứng chỉ SSL/TLS"
     echo -e "${BLUE}7)${NC} Chạy kiểm tra kết nối"
-    echo -e "${BLUE}8)${NC} Thoát"
+    echo -e "${BLUE}8)${NC} Chạy bắt gói tin Wireshark"
+    echo -e "${BLUE}9)${NC} Thoát"
     echo
-    echo -n "Nhập lựa chọn của bạn (1-8): "
+    echo -n "Nhập lựa chọn của bạn (1-9): "
 }
 
 # Xử lý menu
@@ -198,9 +209,17 @@ handle_menu() {
             echo -e "${GREEN}Nhấn Enter để tiếp tục hoặc Ctrl+C để hủy...${NC}"
             read -r
             echo -e "${BLUE}Đang khởi động Wireshark để bắt gói tin...${NC}"
-            sudo wireshark -i lo -f "tcp port $port and tls" &
-            echo -e "${GREEN}Wireshark đã được khởi động!${NC}"
-            echo -e "${GREEN}Bây giờ bạn có thể chạy server và client trong các terminal khác.${NC}"
+            if command -v wireshark > /dev/null 2>&1; then
+                sudo wireshark -i lo -f "tcp port $port and tls" &
+                echo -e "${GREEN}Wireshark đã được khởi động!${NC}"
+                echo -e "${GREEN}Bây giờ bạn có thể chạy server và client trong các terminal khác.${NC}"
+            else
+                echo -e "${RED}Wireshark không được cài đặt. Vui lòng cài đặt Wireshark trước.${NC}"
+                echo -e "${YELLOW}Bạn có thể cài đặt bằng lệnh: sudo apt install wireshark${NC}"
+            fi
+            echo
+            echo -e "${GREEN}Nhấn Enter để quay lại menu chính...${NC}"
+            read
             show_menu
             handle_menu
             ;;

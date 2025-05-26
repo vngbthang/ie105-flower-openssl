@@ -6,152 +6,67 @@ Tài liệu này trình bày phương pháp phân tích và xác minh bảo mậ
 
 ## Tầm Quan Trọng của Mã Hóa trong Học Liên Hợp
 
-Trong Học Liên Hợp, việc bảo vệ các tham số mô hình trong quá trình truyền tải là vô cùng quan trọng vì:
+- Bảo vệ tham số mô hình, quyền riêng tư, chống tấn công trung gian
+- Đảm bảo dữ liệu truyền giữa client và server luôn được mã hóa
 
-1. **Bảo vệ sở hữu trí tuệ**: Các tham số mô hình có thể chứa thông tin giá trị về kiến trúc và kiến thức học máy
-2. **Ngăn chặn tấn công đầu độc mô hình**: Ngăn chặn kẻ tấn công thay đổi tham số mô hình trong quá trình truyền
-3. **Bảo vệ quyền riêng tư**: Mặc dù Federated Learning đã giúp dữ liệu gốc không bị chia sẻ, nhưng tham số mô hình vẫn có thể tiết lộ thông tin về dữ liệu huấn luyện
+## Hướng dẫn nhanh kiểm tra bảo mật với script tự động
 
-## Phương Pháp Phân Tích Bảo Mật
+1. **Chạy script menu tự động:**
+   ```bash
+   ./run_easy.sh
+   ```
+   - Chọn các tùy chọn để chạy server, client, hoặc bắt gói tin Wireshark (tùy chọn 8)
+   - Có thể xem hướng dẫn chi tiết trong file [`wireshark_analysis.md`](wireshark_analysis.md)
 
-### Công cụ sử dụng
+2. **Chạy server và client thực sự (không phải simulation):**
+   - Server: `./start_server_superlink.sh 18443`
+   - Client: `./start_client_supernode.sh localhost 18443 0`
 
-- **Wireshark**: Công cụ phân tích gói tin mạng để kiểm tra lưu lượng mạng giữa client và server
-- **OpenSSL**: Công cụ để kiểm tra và xác minh cấu hình TLS/SSL
-- **Framework Flower**: Hỗ trợ giao tiếp an toàn với TLS/SSL
-- **PyTorch**: Thư viện học máy để huấn luyện mô hình MNIST đơn giản
+3. **Bắt gói tin TLS/SSL:**
+   - Có thể chọn trực tiếp trong menu hoặc tự mở Wireshark:
+   ```bash
+   sudo wireshark
+   ```
+   - Bộ lọc: `tcp.port == 18443 && tls`
 
-### Các bước phân tích
+4. **Phân tích:**
+   - Xác nhận có handshake TLS, các gói Application Data được mã hóa
+   - So sánh với chế độ không bảo mật (cổng 18080)
 
-1. **Thiết lập môi trường thử nghiệm**:
-   - Cài đặt server Flower với TLS/SSL
-   - Cấu hình client Flower để kết nối bảo mật
-   - Chuẩn bị dữ liệu MNIST để huấn luyện
+## Lưu ý
 
-2. **Bắt gói tin mạng**:
-   - Sử dụng Wireshark để bắt gói tin trên giao diện mạng
-   - Lọc gói tin dựa trên cổng server (8443)
-   - Bắt đầu quá trình huấn luyện mô hình
-
-3. **Phân tích gói tin**:
-   - Xác định các gói tin TLS Handshake
-   - Kiểm tra các thông số bảo mật của phiên TLS
-   - Xác minh mã hóa trong dữ liệu Application Data
-
-4. **So sánh với kết nối không bảo mật**:
-   - Thực hiện lại quá trình huấn luyện mà không sử dụng TLS/SSL
-   - Bắt gói tin và phân tích dữ liệu không được mã hóa
-   - So sánh sự khác biệt giữa hai trường hợp
-
-## Hướng Dẫn Phân Tích Bảo Mật với Wireshark
-
-### 1. Khởi động bắt gói tin
-
-```bash
-# Khởi động Wireshark
-sudo wireshark
-wireshark
-```
-
-Sau khi Wireshark mở, chọn interface mạng (thường là loopback cho kết nối local) và thiết lập bộ lọc:
-```
-tcp.port == 18443 && tls
-```
-
-Hoặc nếu bạn sử dụng cổng khác:
-```
-tcp.port == [PORT_NUMBER] && tls
-```
-
-### 2. Khởi động server và client Flower
-
-Trong terminal thứ nhất:
-```bash
-# Cách đơn giản nhất (sử dụng script run_easy.sh)
-./run_easy.sh
-# Chọn 1 để chạy server bảo mật (SSL/TLS) - cổng 18443
-```
-
-Trong terminal thứ hai:
-```bash
-./run_easy.sh
-# Chọn 3 để chạy client bảo mật
-# Nhập các tham số như client ID, cổng, địa chỉ host hoặc nhấn Enter để sử dụng giá trị mặc định
-```
-
-Hoặc sử dụng cách truyền thống:
-```bash
-# Terminal thứ nhất
-python run_mnist_flower_datasets.py --mode server --secure --port 18443
-
-# Terminal thứ hai
-python run_mnist_flower_datasets.py --mode client --secure --client-id 0 --host localhost --port 18443
-```
-
-### 3. Phân tích gói tin TLS
-
-Trong Wireshark, bạn sẽ thấy các gói tin sau:
-
-#### 3.1. TLS Handshake
-
-- **Client Hello**: Client gửi version TLS được hỗ trợ và cipher suites
-- **Server Hello**: Server chọn version TLS và cipher suite
-- **Certificate**: Server gửi chứng chỉ của mình
-- **Server Key Exchange**: Server gửi tham số cho tạo khóa phiên
-- **Certificate Request**: Server yêu cầu chứng chỉ từ client (trong mTLS)
-- **Client Certificate**: Client gửi chứng chỉ của mình
-- **Client Key Exchange**: Client gửi tham số cho tạo khóa phiên
-- **Finished**: Hoàn thành quá trình bắt tay TLS
-
-#### 3.2. Dữ liệu ứng dụng
-
-- **Application Data**: Các gói tin này chứa dữ liệu gRPC đã được mã hóa
-- Đây là nơi các tham số mô hình được truyền tải một cách an toàn
-
-### 4. Xác minh mã hóa
-
-Kiểm tra các gói tin Application Data để xác minh rằng chúng thực sự đã được mã hóa:
-
-1. Chọn một gói tin Application Data trong Wireshark
-2. Mở rộng phần TLS để xem chi tiết
-3. Xác nhận rằng nội dung được mã hóa và không thể đọc được ở dạng văn bản thuần
-4. Kiểm tra cipher suite được sử dụng (ví dụ: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384)
-
-### 5. So sánh với kết nối không bảo mật
-
-Để so sánh, thực hiện lại quá trình huấn luyện mà không sử dụng TLS:
-
-```bash
-python mnist_federated_learning.py
-# Chọn 1 để chạy server
-# Chọn N để không sử dụng TLS/SSL
-```
-
-```bash
-python mnist_federated_learning.py
-# Chọn 2 để chạy client
-# Chọn N để không sử dụng TLS/SSL
-```
-
-Trong trường hợp này, bạn sẽ thấy:
-1. Không có quá trình bắt tay TLS
-2. Dữ liệu gRPC được truyền ở dạng không mã hóa
-3. Tham số mô hình có thể bị chặn và đọc bằng các công cụ phân tích gói tin
+- Simulation mode không tạo ra lưu lượng mạng thực, không thể bắt gói tin TLS
+- Để kiểm tra bảo mật thực tế, luôn chạy server và client riêng biệt với TLS/SSL
+- Có thể lưu file .pcap để phân tích lại
 
 ## Kết luận
 
-Qua phân tích với Wireshark, có thể xác nhận rằng:
-
-1. **Kết nối TLS/SSL hoạt động chính xác**: Quá trình bắt tay TLS diễn ra đúng quy trình
-2. **Dữ liệu được mã hóa**: Các tham số mô hình được mã hóa trong quá trình truyền tải
-3. **mTLS thiết lập thành công**: Cả server và client đều được xác thực
-4. **Bảo mật đảm bảo**: Không thể đọc được nội dung dữ liệu truyền tải nếu không có khóa giải mã
-
-Việc sử dụng TLS/SSL trong Flower đã cung cấp một lớp bảo mật mạnh mẽ, bảo vệ tham số mô hình và đảm bảo tính toàn vẹn của quá trình Học Liên Hợp.
+- Nếu thấy handshake TLS và Application Data được mã hóa, hệ thống đã bảo mật đúng
+- Nếu chạy không bảo mật, dữ liệu có thể bị đọc trực tiếp
+- Luôn kiểm tra bằng Wireshark để xác thực bảo mật thực tế
 
 ## Tài liệu tham khảo
 
-1. [Flower Framework Documentation](https://flower.dev/docs/)
-2. [TLS 1.3 Specification (RFC 8446)](https://datatracker.ietf.org/doc/html/rfc8446)
-3. [Wireshark User's Guide](https://www.wireshark.org/docs/wsug_html_chunked/)
-4. [OpenSSL Documentation](https://www.openssl.org/docs/)
+1. **TLS/SSL Protocols**
+   - [TLS 1.3 Specification - RFC 8446](https://datatracker.ietf.org/doc/html/rfc8446)
+   - [TLS 1.2 Specification - RFC 5246](https://datatracker.ietf.org/doc/html/rfc5246)
+   - Rescorla, E. (2018). "The Transport Layer Security (TLS) Protocol Version 1.3."
+
+2. **OpenSSL**
+   - [OpenSSL Official Documentation](https://www.openssl.org/docs/)
+   - [OpenSSL Command-Line HOWTO](https://www.madboa.com/geek/openssl/)
+   - Viega, J., et al. (2002). "Network Security with OpenSSL." O'Reilly Media.
+
+3. **Wireshark và Phân tích mạng**
+   - [Wireshark User's Guide](https://www.wireshark.org/docs/wsug_html/)
+   - [Analyzing TLS with Wireshark](https://wiki.wireshark.org/TLS)
+   - Sanders, C. (2017). "Practical Packet Analysis: Using Wireshark to Solve Real-World Network Problems." No Starch Press.
+
+4. **bảo mật trong Federated Learning**
+   - Bonawitz, K., et al. (2017). "Practical secure aggregation for privacy-preserving machine learning." CCS.
+   - Truex, S., et al. (2019). "A hybrid approach to privacy-preserving federated learning." AISec.
+   - Kairouz, P., et al. (2021). "Advances and open problems in federated learning." Foundations and Trends in Machine Learning.
+
+5. **mTLS (Mutual TLS)**
+   - [Mutual TLS Authentication - IETF](https://datatracker.ietf.org/doc/html/rfc8446#section-4.6.2)
+   - [Understanding mutual TLS Authentication](https://www.cloudflare.com/learning/access-management/what-is-mutual-tls/)

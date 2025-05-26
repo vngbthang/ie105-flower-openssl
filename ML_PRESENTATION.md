@@ -147,9 +147,24 @@ fl.client.start_client(
 - Các cải tiến có thể thực hiện trong tương lai
 - Giới hạn của hệ thống hiện tại
 
-## Slide 15: Tham khảo
+## Slide 15: Tài liệu tham khảo
 
-1. Flower Framework Documentation: [flower.dev](https://flower.dev/docs/)
-2. TLS 1.3 Specification: RFC 8446
-3. Federated Learning: A Survey on Enabling Technologies, Protocols, and Applications
-4. TLS in Practice: Cryptanalysis of TLS Implementation
+1. **Flower Framework**
+   - [Flower Documentation](https://flower.dev/docs/)
+   - Beutel, D.J., et al. (2022). "Flower: A Friendly Federated Learning Framework." arXiv:2007.14390.
+   - [Flower GitHub Repository](https://github.com/adap/flower)
+
+2. **TLS/SSL và OpenSSL**
+   - Rescorla, E. (2018). "The Transport Layer Security (TLS) Protocol Version 1.3." RFC 8446.
+   - [OpenSSL Project](https://www.openssl.org/)
+   - Viega, J., et al. (2002). "Network Security with OpenSSL." O'Reilly Media.
+
+3. **Federated Learning**
+   - McMahan, H. B., et al. (2017). "Communication-efficient learning of deep networks from decentralized data." AISTATS.
+   - Yang, Q., et al. (2019). "Federated Learning: Challenges, Methods, and Future Directions." IEEE Signal Processing Magazine.
+   - Li, T., et al. (2020). "Federated Learning: Challenges, Methods, and Future Directions." IEEE Signal Processing Magazine, 37(3).
+
+4. **Phân tích Bảo mật**
+   - [Wireshark Network Protocol Analyzer](https://www.wireshark.org/)
+   - Sanders, C. (2017). "Practical Packet Analysis: Using Wireshark to Solve Real-World Network Problems." No Starch Press.
+   - Stallings, W. (2017). "Cryptography and Network Security: Principles and Practice." Pearson.

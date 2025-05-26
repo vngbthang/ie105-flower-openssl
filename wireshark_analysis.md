@@ -1,86 +1,73 @@
 # Hướng Dẫn Phân Tích Gói Tin TLS/SSL Trong Flower với Wireshark
 
-## Chuẩn Bị
+## Tổng quan
 
-1. **Cài đặt Wireshark**:
+Tài liệu này hướng dẫn cách bắt và phân tích gói tin TLS/SSL trong hệ thống Flower sử dụng các script tự động của dự án.
+
+## 1. Chạy bắt gói tin tự động (Khuyến nghị)
+
+1. Chạy script menu:
    ```bash
-   sudo apt update
-   sudo apt install wireshark
+   ./run_easy.sh
    ```
+2. Chọn tùy chọn 8 (Chạy bắt gói tin Wireshark)
+3. Nhập cổng server (mặc định: 18443)
+4. Wireshark sẽ tự động mở với bộ lọc phù hợp
+5. Mở terminal mới để chạy server (tùy chọn 1) và client (tùy chọn 3)
 
-2. **Cấu hình quyền bắt gói tin** (nếu cần):
-   ```bash
-   sudo usermod -a -G wireshark $USER
-   # Đăng xuất và đăng nhập lại để áp dụng thay đổi
-   ```
-
-## Bắt Gói Tin TLS/SSL trong Flower
-
-### Phương Pháp 1: Sử dụng run_easy.sh
-
-1. Chạy script `run_easy.sh` và chọn tùy chọn 8 (Chạy bắt gói tin Wireshark)
-2. Nhập cổng mà server Flower sẽ lắng nghe (mặc định: 18443)
-3. Wireshark sẽ tự động mở với bộ lọc `tcp port 18443 and tls`
-4. Mở terminal mới để chạy server (`run_easy.sh` và chọn tùy chọn 1)
-5. Mở terminal khác để chạy client (`run_easy.sh` và chọn tùy chọn 3)
-
-### Phương Pháp 2: Chạy Wireshark Thủ Công
+## 2. Chạy Wireshark thủ công
 
 1. Mở Wireshark với quyền root:
    ```bash
    sudo wireshark
    ```
-
-2. Chọn giao diện mạng để bắt gói tin (thường là `lo` cho localhost)
-
+2. Chọn giao diện mạng (thường là `lo` cho localhost)
 3. Thiết lập bộ lọc:
    ```
    tcp port 18443 && tls
    ```
-
 4. Nhấn "Start Capturing Packets"
+5. Chạy server và client trong các terminal riêng biệt
 
-5. Chạy server và client Flower trong các terminal riêng biệt
+## 3. Phân tích kết quả
 
-## Phân Tích Kết Quả
+- **TLS Handshake**: Tìm các gói Client Hello, Server Hello, Certificate...
+- **Application Data**: Dữ liệu sau handshake sẽ được mã hóa hoàn toàn
+- **So sánh với kết nối không bảo mật**: Bắt gói trên cổng 18080 để thấy dữ liệu không mã hóa
 
-### 1. TLS Handshake
+## 4. Lưu ý
 
-Tìm các gói tin trao đổi handshake TLS ban đầu:
+- Simulation mode không tạo ra lưu lượng mạng thực, không thể bắt gói tin TLS
+- Để kiểm tra bảo mật thực tế, luôn chạy server và client riêng biệt với TLS/SSL
+- Có thể lưu file .pcap để phân tích lại
 
-- **Client Hello**: Client gửi thông tin về phiên bản TLS hỗ trợ
-- **Server Hello**: Server phản hồi và chọn phiên bản TLS và cipher suite
-- **Certificate**: Server gửi chứng chỉ SSL/TLS
-- **Key Exchange**: Quá trình trao đổi khóa
+## 5. Kết luận
 
-### 2. Xác Thực Dữ Liệu Được Mã Hóa
+- Nếu thấy handshake TLS và Application Data được mã hóa, hệ thống đã bảo mật đúng
+- Nếu chạy không bảo mật, dữ liệu có thể bị đọc trực tiếp
+- Luôn kiểm tra bằng Wireshark để xác thực bảo mật thực tế
 
-Sau khi handshake TLS hoàn tất, bạn sẽ thấy các gói tin "Application Data":
-- Dữ liệu này được mã hóa hoàn toàn
-- Không thể đọc được nội dung thô của gói tin
-- Đảm bảo rằng tham số mô hình được bảo vệ trong quá trình truyền
+## Tài liệu tham khảo
 
-### 3. So Sánh Với Kết Nối Không Bảo Mật
+1. **Wireshark và phân tích gói tin**
+   - [Wireshark User's Guide](https://www.wireshark.org/docs/wsug_html/)
+   - [Display Filter Reference](https://www.wireshark.org/docs/dfref/)
+   - Sanders, C. (2017). "Practical Packet Analysis: Using Wireshark to Solve Real-World Network Problems." No Starch Press.
 
-Để so sánh, bạn có thể bắt gói tin không có TLS (cổng 18080):
-```
-tcp port 18080
-```
+2. **TLS Protocol**
+   - [Wireshark Wiki: TLS](https://wiki.wireshark.org/TLS)
+   - [TLS 1.3 Specification - RFC 8446](https://datatracker.ietf.org/doc/html/rfc8446)
+   - Rescorla, E. (2000). "SSL and TLS: Designing and Building Secure Systems." Addison-Wesley.
 
-Với kết nối không bảo mật:
-- Không có quá trình TLS handshake
-- Dữ liệu gRPC được truyền ở dạng không mã hóa
-- Tham số mô hình có thể bị chặn và đọc
+3. **gRPC Protocol**
+   - [gRPC Official Documentation](https://grpc.io/docs/)
+   - [gRPC Protocol Security](https://grpc.io/docs/guides/auth/)
 
-## Ghi Chú Quan Trọng
+4. **Bảo mật trong Flower Framework**
+   - [Flower Security Documentation](https://flower.dev/docs/framework/how-to-use-ssl-tls.html)
+   - [Secure Aggregation in Federated Learning](https://arxiv.org/abs/1902.08927)
 
-- Ngay cả khi server đang sử dụng "simulation mode" trong Flower, giao tiếp giữa client và server vẫn được mã hóa nếu TLS/SSL được bật
-- Để phân tích sâu hơn, bạn có thể lưu lại file `.pcap` từ Wireshark để phân tích sau
-- Phân tích kỹ các gói tin Application Data để đảm bảo không có dữ liệu nào bị lộ
-
-## Kết luận
-
-Nếu kết nối TLS/SSL hoạt động chính xác, bạn sẽ thấy:
-- Quá trình bắt tay TLS diễn ra đúng quy trình
-- Tất cả dữ liệu được mã hóa trong quá trình truyền tải
-- Không thể đọc được nội dung dữ liệu từ bên ngoài
+5. **Công cụ phân tích bảo mật**
+   - [tshark - Wireshark CLI](https://www.wireshark.org/docs/man-pages/tshark.html)
+   - [ssldump - SSL/TLS network protocol analyzer](https://github.com/adulau/ssldump)
+   - [OpenSSL s_client](https://www.openssl.org/docs/man1.1.1/man1/s_client.html)

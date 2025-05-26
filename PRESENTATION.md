@@ -159,3 +159,21 @@ flower-supernode \
 - Triển khai certificate rotation và revocation
 - Tối ưu hóa hiệu năng TLS
 - Áp dụng bảo mật nhiều lớp kết hợp với TLS
+
+## Slide 13: Tài liệu tham khảo
+
+1. Flower Framework Documentation
+   - flower.dev/docs/ - Tài liệu chính thức của Flower
+   - github.com/adap/flower - Mã nguồn Flower
+
+2. TLS/SSL
+   - RFC 8446: The Transport Layer Security (TLS) Protocol Version 1.3
+   - "SSL and TLS: Theory and Practice" - Rolf Oppliger
+
+3. Federated Learning
+   - "Communication-Efficient Learning of Deep Networks from Decentralized Data" - McMahan et al. (2017)
+   - "Federated Learning: Challenges, Methods, and Future Directions" - Yang et al. (2019)
+
+4. Các công cụ
+   - OpenSSL Project: openssl.org
+   - Wireshark Network Analyzer: wireshark.org

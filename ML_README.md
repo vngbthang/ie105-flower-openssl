@@ -2,12 +2,38 @@
 
 ## Giới thiệu
 
-Dự án này triển khai hệ thống Học Liên Hợp (Federated Learning) sử dụng framework Flower với bộ dữ liệu MNIST. Hệ thống bao gồm một mô hình phân loại chữ số viết tay đơn giản được huấn luyện trong môi trường phân tán, trong đó dữ liệu được giữ cục bộ tại các client và chỉ chia sẻ tham số mô hình với server trung tâm.
+Dự án này triển khai hệ thống Học Liên Hợp (Federated Learning) sử dụng framework Flower với bộ dữ liệu MNIST. Hệ thống bao gồm một mô hình phân loại chữ số viết tay đơn giản được huấn luyện trong môi trường phân tán, trong đó dữ liệu được giữ cục bộ tại các client và chỉ chia sẻ tham số mô hình với server trung tâm. Hệ thống hỗ trợ bảo mật giao tiếp bằng TLS/SSL (OpenSSL).
+
+## Cách sử dụng (Khuyến nghị)
+
+### 1. Chạy script tự động
+
+```bash
+chmod +x run_easy.sh
+./run_easy.sh
+```
+- Chọn các tùy chọn để chạy server, client, mô phỏng, sửa chứng chỉ, hoặc bắt gói tin Wireshark.
+- Đảm bảo chọn đúng chế độ bảo mật (SSL/TLS) để kiểm tra bảo mật thực tế.
+
+### 2. Chạy thủ công từng thành phần
+
+- **Server:**
+  ```bash
+  ./start_server_superlink.sh 18443
+  ```
+- **Client:**
+  ```bash
+  ./start_client_supernode.sh localhost 18443 0
+  ```
+
+### 3. Phân tích bảo mật
+
+- Có thể chọn bắt gói tin Wireshark trực tiếp trong menu của `run_easy.sh` (tùy chọn 8)
+- Xem hướng dẫn chi tiết trong file [`wireshark_analysis.md`](wireshark_analysis.md)
 
 ## Mô hình ML được sử dụng
 
-Mô hình được sử dụng là một mạng nơ-ron tích chập (CNN) đơn giản cho nhiệm vụ phân loại chữ số viết tay MNIST:
-
+Mô hình là một mạng nơ-ron tích chập (CNN) đơn giản cho nhiệm vụ phân loại chữ số viết tay MNIST:
 - Lớp tích chập đầu tiên với 32 filter
 - Lớp tích chập thứ hai với 64 filter
 - Lớp max pooling
@@ -17,7 +43,6 @@ Mô hình được sử dụng là một mạng nơ-ron tích chập (CNN) đơn
 ## Bộ dữ liệu
 
 Bộ dữ liệu MNIST được sử dụng trong dự án này là bộ dữ liệu tiêu chuẩn và phổ biến cho bài toán nhận dạng chữ số viết tay. Bộ dữ liệu này bao gồm:
-
 - 60,000 ảnh huấn luyện
 - 10,000 ảnh kiểm tra
 - Mỗi ảnh có kích thước 28x28 pixel, grayscale
@@ -30,26 +55,6 @@ Bộ dữ liệu được tải xuống tự động thông qua thư viện torc
 ```bash
 pip install flwr torch torchvision numpy
 ```
-
-## Cách sử dụng
-
-### 1. Chạy server
-
-```bash
-python mnist_federated_learning.py
-```
-
-Khi được hỏi, chọn "1" để chạy server, và "y" hoặc "n" để sử dụng hoặc không sử dụng TLS/SSL.
-
-### 2. Chạy client
-
-Mở một terminal khác và chạy:
-
-```bash
-python mnist_federated_learning.py
-```
-
-Khi được hỏi, chọn "2" để chạy client, và chọn cùng một tùy chọn TLS/SSL như server.
 
 ## Cấu trúc của mã nguồn ML
 
@@ -73,26 +78,32 @@ Khi được hỏi, chọn "2" để chạy client, và chọn cùng một tùy 
    - `run_client`: Khởi động Flower client với mô hình MNIST
    - Hỗ trợ TLS/SSL cho bảo mật trong truyền thông
 
-## Luồng dữ liệu trong Học Liên Hợp
+## Lưu ý
 
-1. Server khởi tạo mô hình toàn cục và bắt đầu quá trình Federated Learning.
-2. Các client nhận tham số mô hình từ server.
-3. Mỗi client huấn luyện mô hình trên dữ liệu cục bộ của mình.
-4. Các client chỉ gửi các cập nhật tham số (không phải dữ liệu) về server.
-5. Server tổng hợp các cập nhật từ tất cả các client để cải thiện mô hình toàn cục.
-6. Quy trình lặp lại cho đến khi đạt được số vòng huấn luyện đã định.
+- Để kiểm tra bảo mật thực tế, luôn chạy server và client riêng biệt với TLS/SSL
+- Simulation mode chỉ dùng để kiểm thử logic, không tạo ra lưu lượng mạng thực
 
-## Lợi ích của việc sử dụng Học Liên Hợp
+## Tài liệu tham khảo
 
-1. **Bảo mật dữ liệu**: Dữ liệu vẫn được lưu giữ tại client, chỉ có tham số mô hình được chia sẻ.
-2. **Hiệu quả về băng thông**: Truyền tải các tham số mô hình chiếm ít băng thông hơn so với việc truyền toàn bộ dữ liệu.
-3. **Tính riêng tư**: Phù hợp với các quy định về bảo vệ dữ liệu như GDPR.
-4. **Khả năng mở rộng**: Có thể dễ dàng mở rộng đến nhiều client phân tán trên mạng.
+1. **Flower Framework**
+   - [Flower Documentation](https://flower.dev/docs/)
+   - [Flower GitHub Repository](https://github.com/adap/flower)
+   - [Flower API Reference](https://flower.dev/docs/apiref.html)
 
-## Mở rộng
+2. **PyTorch và Deep Learning**
+   - [PyTorch Documentation](https://pytorch.org/docs/stable/index.html)
+   - [PyTorch Tutorials](https://pytorch.org/tutorials/)
+   - Goodfellow, I., et al. (2016). "Deep Learning." MIT Press.
 
-Dự án này có thể được mở rộng theo nhiều cách:
-- Thêm nhiều client để mô phỏng môi trường thực tế hơn
-- Sử dụng các bộ dữ liệu phức tạp hơn (CIFAR-10, ImageNet)
-- Triển khai các chiến lược tổng hợp khác nhau (FedAvg, FedProx, etc.)
-- Tích hợp với các hệ thống đảm bảo quyền riêng tư khác (Differential Privacy, Secure Aggregation)
+3. **Federated Learning**
+   - McMahan, H. B., et al. (2017). "Communication-efficient learning of deep networks from decentralized data." AISTATS.
+   - Li, T., et al. (2020). "Federated Learning: Challenges, Methods, and Future Directions." IEEE Signal Processing Magazine.
+   - [Google's Federated Learning: Collaborative Machine Learning without Centralized Training Data](https://ai.googleblog.com/2017/04/federated-learning-collaborative.html)
+
+4. **MNIST Dataset**
+   - LeCun, Y., et al. (1998). "Gradient-based learning applied to document recognition." Proceedings of the IEEE.
+   - [MNIST Database - Yann LeCun](http://yann.lecun.com/exdb/mnist/)
+
+5. **Convolutional Neural Networks**
+   - LeCun, Y., et al. (2015). "Deep learning." Nature.
+   - Zhang, W., et al. (2018). "A comprehensive survey on cross-modal retrieval." arXiv preprint.

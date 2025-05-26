@@ -192,3 +192,31 @@ Trong kết nối không bảo mật, bạn sẽ thấy:
    - Chạy tùy chọn 6 trong menu để sửa chứng chỉ
    - Đảm bảo chứng chỉ được tạo đúng cách
    - Kiểm tra ngày hết hạn của chứng chỉ
+
+## Tài liệu tham khảo
+
+1. **Flower Framework**
+   - [Flower Documentation](https://flower.dev/docs/)
+   - [Flower Tutorial: PyTorch](https://flower.dev/docs/tutorial/Flower-1-Intro-to-FL-PyTorch.html)
+   - [Flower Tutorial: MNIST](https://flower.dev/docs/examples/pytorch_mnist.html)
+
+2. **PyTorch và MNIST**
+   - [PyTorch Tutorials](https://pytorch.org/tutorials/)
+   - [MNIST Database - Yann LeCun](http://yann.lecun.com/exdb/mnist/)
+   - [pytorch/examples/mnist](https://github.com/pytorch/examples/tree/main/mnist)
+
+3. **Wireshark**
+   - [Wireshark User's Guide](https://www.wireshark.org/docs/wsug_html/)
+   - [Display Filter Reference](https://www.wireshark.org/docs/dfref/)
+   - [Wireshark Wiki: TLS](https://wiki.wireshark.org/TLS)
+   - Sanders, C. (2017). "Practical Packet Analysis: Using Wireshark to Solve Real-World Network Problems." No Starch Press.
+
+4. **OpenSSL và Chứng chỉ**
+   - [OpenSSL Command-Line HOWTO](https://www.madboa.com/geek/openssl/)
+   - [OpenSSL Cookbook](https://www.feistyduck.com/library/openssl-cookbook/)
+   - [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/)
+
+5. **Federated Learning**
+   - McMahan, H. B., et al. (2017). "Communication-efficient learning of deep networks from decentralized data." AISTATS.
+   - Li, T., et al. (2020). "Federated Learning: Challenges, Methods, and Future Directions." IEEE Signal Processing Magazine, 37(3).
+   - [Google AI Blog: Federated Learning](https://ai.googleblog.com/2017/04/federated-learning-collaborative.html)

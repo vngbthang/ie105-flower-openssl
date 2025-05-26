@@ -32,13 +32,13 @@ fi
 echo "Starting Flower SuperLink server on port $PORT with secure TLS..."
 echo "Using fixed executor from server.executor_fixed:executor"
 
-# Start SuperLink with the correct parameters for 1.18.0
+# Start SuperLink with the correct parameters for 1.18.0, with auto registration
 flower-superlink \
     --ssl-certfile="$CERT_DIR/server/server.pem" \
     --ssl-keyfile="$CERT_DIR/server/server.key" \
     --ssl-ca-certfile="$CERT_DIR/ca/ca.pem" \
     --fleet-api-address "[::]:$PORT" \
     --executor="server.executor_fixed:executor" \
-    --executor-config="verbose=true min_available_clients=1 min_fit_clients=1 min_evaluate_clients=1 num_rounds=3"
+    --executor-config="verbose=true min_available_clients=1 min_fit_clients=1 min_evaluate_clients=1 num_rounds=3 auto_register_clients=true"
 
 echo "Flower SuperLink server has terminated."

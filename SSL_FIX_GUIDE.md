@@ -99,3 +99,29 @@ If issues persist, use these diagnostic tools:
    export GRPC_VERBOSITY=DEBUG
    export GRPC_TRACE=all,ssl
    ```
+
+## Tài liệu tham khảo
+
+1. **gRPC và SSL/TLS**
+   - [gRPC SSL/TLS Documentation](https://grpc.io/docs/guides/auth/tls-encryption/)
+   - [gRPC Troubleshooting Guide](https://github.com/grpc/grpc/blob/master/TROUBLESHOOTING.md)
+   - [gRPC Server Credentials](https://grpc.github.io/grpc/cpp/namespacegrpc.html#a013c2a9e56cdb92b593b019d6c6db3d7)
+
+2. **OpenSSL Certificate Management**
+   - [OpenSSL Certificate Guide](https://www.openssl.org/docs/man1.1.1/man1/openssl-x509.html)
+   - [Chain of Trust in SSL/TLS](https://www.ssl.com/faqs/what-is-a-certificate-authority/)
+   - [Certificate Chain Format Requirements](https://www.digicert.com/kb/ssl-support/pem-ssl-creation.htm)
+
+3. **Troubleshooting SSL/TLS Issues**
+   - [SSL/TLS Common Issues and Solutions](https://www.ssllabs.com/projects/documentation/index.html)
+   - [Debugging TLS/SSL Connections](https://docs.oracle.com/javase/8/docs/technotes/guides/security/jsse/JSSERefGuide.html#Debug)
+   - [SSL Server Test](https://www.ssllabs.com/ssltest/)
+
+4. **Flower Framework SSL/TLS Integration**
+   - [Flower SSL/TLS Documentation](https://flower.dev/docs/framework/how-to-use-ssl-tls.html)
+   - [Python SSL Module](https://docs.python.org/3/library/ssl.html)
+
+5. **Network Debugging Tools**
+   - [OpenSSL s_client Tool](https://www.openssl.org/docs/man1.1.1/man1/openssl-s_client.html)
+   - [tcpdump Guide](https://danielmiessler.com/study/tcpdump/)
+   - [Wireshark TLS Analysis](https://wiki.wireshark.org/TLS)

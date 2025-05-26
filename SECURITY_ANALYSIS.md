@@ -118,6 +118,33 @@ Tài liệu này phân tích các lỗ hổng tiềm ẩn trong hệ thống H�
 - Triển khai cơ chế quản lý vòng đời chứng chỉ
 - Sử dụng công cụ quản lý chứng chỉ chuyên nghiệp
 
+## Tài liệu tham khảo
+
+1. **An toàn TLS/SSL**
+   - [OWASP TLS Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html)
+   - Oppliger, R. (2016). "SSL and TLS: Theory and Practice." Artech House.
+   - [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/)
+
+2. **Quản lý Chứng chỉ và PKI**
+   - [Public Key Infrastructure - NIST Special Publication 800-32](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-32.pdf)
+   - Adams, C., & Lloyd, S. (2003). "Understanding PKI: Concepts, Standards, and Deployment Considerations." Addison-Wesley.
+   - [Certificate Management - NIST Special Publication 1800-16](https://www.nccoe.nist.gov/projects/building-blocks/tls-server-certificate-management)
+
+3. **Bảo mật trong Federated Learning**
+   - Kairouz, P., et al. (2021). "Advances and open problems in federated learning." Foundations and Trends in Machine Learning.
+   - Lyu, L., et al. (2020). "Threats to Federated Learning: A Survey." arXiv preprint arXiv:2003.02133.
+   - Mothukuri, V., et al. (2021). "A survey on security and privacy of federated learning." Future Generation Computer Systems.
+
+4. **Đánh giá Lỗ hổng trong Hệ thống Mật mã**
+   - [Cryptographic Standards and Guidelines - NIST](https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines)
+   - [Common Vulnerabilities and Exposures (CVE)](https://cve.mitre.org/)
+   - Stallings, W. (2017). "Cryptography and Network Security: Principles and Practice." Pearson.
+
+5. **Model Poisoning và Adversarial Attacks**
+   - Bagdasaryan, E., et al. (2020). "How to backdoor federated learning." AISTATS.
+   - Sun, Z., et al. (2021). "Data Poisoning Attacks on Federated Machine Learning." IEEE Internet of Things Journal.
+   - Wang, H., et al. (2020). "Attack of the Tails: Yes, You Really Can Backdoor Federated Learning." NeurIPS.
+
 ## Kết luận
 
 Mặc dù TLS/SSL cung cấp một lớp bảo mật mạnh mẽ cho hệ thống Học Liên Hợp Flower, nhưng vẫn cần thực hiện thêm các biện pháp bảo mật khác để bảo vệ toàn diện hệ thống. Đặc biệt, việc kết hợp TLS với các kỹ thuật bảo vệ quyền riêng tư đặc thù cho học máy như Differential Privacy và Secure Aggregation sẽ cung cấp một hệ thống toàn diện và an toàn hơn.
